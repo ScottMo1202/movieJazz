@@ -18,7 +18,7 @@ class Theaters(models.Model):
     post_code = models.CharField(required = True, max_length = 5, null = False)
 
 class Memberships(models.Model):
-    name = models.CharField(required = True, max_length = 100, null = False, unique = True, validator = [validate_membership_name])
+    name = models.CharField(required = True, max_length = 100, null = False, unique = True, validator = [validate_membership_name], default = "normal")
 
 class Users(models.Model):
     username = models.CharField(required = True, max_length = 150, null = False, unique = True)
@@ -34,7 +34,7 @@ class Movies(models.Model):
     movie_type = models.ForeignKey(MovieTypes, on_delete=models.CASCADE)
     length = models.DurationField()
 
-class tickets(models.Model):
+class Tickets(models.Model):
     movie = models.ForeignKey(Movies, on_delete = models.CASCADE)
     time = models.DateTimeField()
     theater = models.ForeignKey(Theaters, on_delete = models.CASCADE)
