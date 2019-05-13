@@ -11,7 +11,7 @@ class Theaters(models.Model):
     city = models.CharField(max_length = 500, null = False)
     state = models.CharField(max_length = 2, null = False)
     post_code = models.CharField(max_length = 5, null = False)
-
+'''
 class Memberships(models.Model):
     name = models.CharField(max_length = 100, null = False, unique = True)
     
@@ -20,14 +20,20 @@ class Memberships(models.Model):
             super().save(*args, **kwargs)
         else:
             return HttpResponse('This is not a valid membership', status = 400) 
-
+'''
 class Users(models.Model):
     username = models.CharField(max_length = 50, null = False, unique = True)
     password = models.CharField(max_length = 50, null = False)
     first_name = models.CharField(max_length = 100, null = False)
     last_name = models.CharField(max_length = 100, null = False)
     email = models.EmailField(unique = True, null = False)
-    membership = models.ForeignKey(Memberships, default=1, on_delete=models.CASCADE)
+    membership = models.CharField(max_length = 50, null = False, default = "normal")
+
+    def save(self, *args, **kwargs):
+        if self.membership in ['administrator', 'member', 'normal', 'seller']:
+            super().save(*args, **kwargs)
+        else:
+            return HttpResponse('This is not a valid membership', status = 400) 
 
 class Movies(models.Model):
     name = models.CharField(max_length = 50, null = False)
@@ -38,6 +44,7 @@ class Tickets(models.Model):
     movie = models.ForeignKey(Movies, on_delete = models.CASCADE)
     time = models.DateTimeField(null = False)
     theater = models.ForeignKey(Theaters, on_delete = models.CASCADE)
+    user = models.ForeignKey(Users, on_delete = models.CASCADE)
     price = models.DecimalField(max_digits=5, decimal_places=2, null = False)
     
     REGULAR = 'RE'
