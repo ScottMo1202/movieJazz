@@ -9,3 +9,5 @@ def home(request):
         return render(request, '../templates/main/index.html', status = 200)
     else:
         return HttpResponse("Method not allowed on /.", status = 405)
+
+
