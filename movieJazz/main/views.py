@@ -1,8 +1,11 @@
 from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
-from .models import Theaters, Transactions, Tickets
+from .models import Theaters, Transactions, Tickets, Movies, Users
 from django.db import DatabaseError
 import json
+from django.views.decorators.debug import sensitive_post_parameters
+from django.views.decorators.csrf import csrf_exempt
+import datetime
 # Create your views here.
 
 JSONDecodeFailMessage = "Error decoding JSON body. Please ensure your JSON file is valid."
@@ -12,12 +15,16 @@ KeyErrorMessage = "Erros when accessing the object"
 ExceptionMessage = "Some Exceptions Happened"
 AuthorizationError = "Not Authorized"
 
+@csrf_exempt
+@sensitive_post_parameters()
 def home(request):
     if request.method == 'GET':
         return render(request, '../templates/main/index.html', status = 200)
     else:
         return HttpResponse("Method not allowed on /.", status = 405)
 
+@csrf_exempt
+@sensitive_post_parameters()
 def jsonHandling(request):
     try:
         data = json.loads(request.body.decode("utf-8"))
@@ -29,7 +36,8 @@ def jsonHandling(request):
         return data
 
 
-
+@csrf_exempt
+@sensitive_post_parameters()
 def theaters(request):
     if request.method == 'GET':
         theaters_data = []
@@ -75,6 +83,8 @@ def theaters(request):
     else:
         return HttpResponse(BadRequestMessage, status = 405)
 
+@csrf_exempt
+@sensitive_post_parameters()
 def specificTheater(requests, theater_id):
     if request.method == 'GET':
         the_theater = Theaters.objects.filter(id = theater_id).get()
@@ -128,6 +138,53 @@ def specificTicket(request):
     else:
         if request.method == "GET":
 '''
+
+@csrf_exempt
+@sensitive_post_parameters()
+def movies(request):
+    if request.method == 'GET':
+        try:
+            moviesList = list(Movies.objects.all().values()) 
+            return JsonResponse(moviesList, safe = False,  content_type = 'application/json')
+        except DatabaseError:
+            return HttpResponse(DatabaseErrorMessage, status=400)
+    
+    elif request.method == 'POST':
+        if request.user.is_authenticated:
+            if len(Users.objects.all().values().filter(id= request.user.id, membership = "administrator")) == 0:
+                return HttpResponse("Unauthorized", status=403)
+            
+            posted_data = jsonHandling(request)
+            if posted_data == JSONDecodeFailMessage:
+                return HttpResponse(JSONDecodeFailMessage, status = 400)
+            else:
+                newMovie = Movies.objects.create(name = posted_data['name'], 
+                description = posted_data['description'], runtime = posted_data['runtime'])
+                newMovie.save()
+                movieInfo = Movies.objects.all().values().filter(pk=newMovie.pk)[0]
+                return JsonResponse(movieInfo, safe = False, content_type = 'application/json', status = 201)
+        else:
+            return HttpResponse("AuthorizationError", status=401)
+    else:
+        return HttpResponse("Method not allowed on /.", status = 405)
+
+@csrf_exempt
+@sensitive_post_parameters()
+def users(request):
+    if request.user.is_authenticated:
+        if len(Users.objects.all().values().filter(id= request.user.id, membership = "administrator")) == 0:
+            return HttpResponse("Unauthorized", status=403)
+        if request.method == 'GET':
+            try:
+                userList = list(Users.objects.all().values()) 
+                return JsonResponse(userList, safe = False,  content_type = 'application/json')
+            except DatabaseError:
+                return HttpResponse(DatabaseErrorMessage, status=400)
+        else :
+            return HttpResponse("Method not allowed on /.", status = 405)
+    else:
+        return HttpResponse("AuthorizationError", status=401)
+
 
             
             
