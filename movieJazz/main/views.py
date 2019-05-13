@@ -1,8 +1,11 @@
 from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
-from .models import Theaters, Transactions, Tickets
+from .models import Theaters, Transactions, Tickets, Movies, Users, Offers
 from django.db import DatabaseError
 import json
+from django.views.decorators.debug import sensitive_post_parameters
+from django.views.decorators.csrf import csrf_exempt
+import datetime
 # Create your views here.
 
 JSONDecodeFailMessage = "Error decoding JSON body. Please ensure your JSON file is valid."
@@ -12,12 +15,16 @@ KeyErrorMessage = "Erros when accessing the object"
 ExceptionMessage = "Some Exceptions Happened"
 AuthorizationError = "Not Authorized"
 
+@csrf_exempt
+@sensitive_post_parameters()
 def home(request):
     if request.method == 'GET':
         return render(request, '../templates/main/index.html', status = 200)
     else:
         return HttpResponse("Method not allowed on /.", status = 405)
 
+@csrf_exempt
+@sensitive_post_parameters()
 def jsonHandling(request):
     try:
         data = json.loads(request.body.decode("utf-8"))
@@ -29,7 +36,8 @@ def jsonHandling(request):
         return data
 
 
-
+@csrf_exempt
+@sensitive_post_parameters()
 def theaters(request):
     if request.method == 'GET':
         theaters_data = []
@@ -75,6 +83,8 @@ def theaters(request):
     else:
         return HttpResponse(BadRequestMessage, status = 405)
 
+@csrf_exempt
+@sensitive_post_parameters()
 def specificTheater(requests, theater_id):
     if request.method == 'GET':
         the_theater = Theaters.objects.filter(id = theater_id).get()
@@ -128,6 +138,180 @@ def specificTicket(request):
     else:
         if request.method == "GET":
 '''
+
+@csrf_exempt
+@sensitive_post_parameters()
+def movies(request):
+    if request.method == 'GET':
+        try:
+            moviesList = list(Movies.objects.all().values()) 
+            return JsonResponse(moviesList, safe = False,  content_type = 'application/json')
+        except DatabaseError:
+            return HttpResponse(DatabaseErrorMessage, status=400)
+    
+    elif request.method == 'POST':
+        if request.user.is_authenticated:
+            if len(Users.objects.all().values().filter(id= request.user.id, membership = "administrator")) == 0:
+                return HttpResponse("Unauthorized", status=403)
+            
+            posted_data = jsonHandling(request)
+            if posted_data == JSONDecodeFailMessage:
+                return HttpResponse(JSONDecodeFailMessage, status = 400)
+            else:
+                try:
+                    newMovie = Movies.objects.create(name = posted_data['name'], 
+                    description = posted_data['description'], runtime = posted_data['runtime'])
+                    newMovie.save()
+                    movieInfo = Movies.objects.all().values().filter(pk=newMovie.pk)[0]
+                    return JsonResponse(movieInfo, safe = False, content_type = 'application/json', status = 201)
+                except DatabaseError:
+                    return HttpResponse(DatabaseErrorMessage, status=400)
+        else:
+            return HttpResponse("AuthorizationError", status=401)
+    else:
+        return HttpResponse("Method not allowed on /movies.", status = 405)
+
+@csrf_exempt
+@sensitive_post_parameters()
+def specificMovie(request, movieId):
+    if request.method == 'GET':
+        try:
+            specMovie = Movies.objects.all().values().filter(pk = movieId)[0]
+            return JsonResponse(specMovie, safe = False,  content_type = 'application/json')
+        
+        except DatabaseError:
+            return HttpResponse(DatabaseErrorMessage, status=400)
+
+    elif request.method == 'PATCH':
+        if request.user.is_authenticated:
+            if len(Users.objects.all().values().filter(id= request.user.id, membership = "administrator")) == 0:
+                return HttpResponse("Unauthorized", status=403)
+            posted_data = jsonHandling(request)
+            if posted_data == JSONDecodeFailMessage:
+                return HttpResponse(JSONDecodeFailMessage, status = 400)
+            else:
+                try:
+                    if 'description' in posted_data:
+                        Movies.objects.filter(id= movieId).update(description= posted_data['description'])
+                    movieInfo = Movies.objects.all().values().filter(id= movieId)[0]
+                    return JsonResponse(movieInfo, safe = False, content_type = 'application/json', status = 201)
+                except DatabaseError:
+                    return HttpResponse(DatabaseErrorMessage, status=400)
+        else:
+            return HttpResponse("AuthorizationError", status=401)
+
+    elif request.method == 'DELETE':
+        if request.user.is_authenticated:
+            if len(Users.objects.all().values().filter(id= request.user.id, membership = "administrator")) == 0:
+                return HttpResponse("Unauthorized", status=403)
+            try:
+                Movies.objects.filter(id= movieId).delete()
+                return HttpResponse("The movie has been deleted.")
+            except DatabaseError:
+                return HttpResponse(DatabaseErrorMessage, status=400)
+        else:
+            return HttpResponse("AuthorizationError", status=401)
+
+    else :
+        return HttpResponse("Method not allowed on /movies/.", status = 405)
+
+@csrf_exempt
+@sensitive_post_parameters()
+def users(request):
+    if request.user.is_authenticated:
+        if len(Users.objects.all().values().filter(id= request.user.id, membership = "administrator")) == 0:
+            return HttpResponse("Unauthorized", status=403)
+        if request.method == 'GET':
+            try:
+                userList = list(Users.objects.all().values()) 
+                return JsonResponse(userList, safe = False,  content_type = 'application/json')
+            except DatabaseError:
+                return HttpResponse(DatabaseErrorMessage, status=400)
+        else :
+            return HttpResponse("Method not allowed on /users.", status = 405)
+    else:
+        return HttpResponse(AuthorizationError, status=401)
+
+
+@csrf_exempt
+@sensitive_post_parameters()
+def offers(request):
+    if request.method == 'GET':
+        try:
+            offersList = list(Offers.objects.all().values()) 
+            return JsonResponse(offersList, safe = False,  content_type = 'application/json')
+        except DatabaseError:
+            return HttpResponse(DatabaseErrorMessage, status=400)
+    
+    elif request.method == 'POST':
+        if request.user.is_authenticated:
+            if len(Users.objects.all().values().filter(id= request.user.id, membership = "administrator")) == 0:
+                return HttpResponse("Unauthorized", status=403)
+            
+            posted_data = jsonHandling(request)
+            if posted_data == JSONDecodeFailMessage:
+                return HttpResponse(JSONDecodeFailMessage, status = 400)
+            else:
+                try:
+                    newOffer = Offers.objects.create(offer_name = posted_data['offer_name'], 
+                    offer_perc = posted_data['offer_perc'], description = posted_data['description'])
+                    newOffer.save()
+                    offerInfo = Offers.objects.all().values().filter(pk=newOffer.pk)[0]
+                    return JsonResponse(offerInfo, safe = False, content_type = 'application/json', status = 201)
+                except DatabaseError:
+                    return HttpResponse(DatabaseErrorMessage, status=400)
+        else:
+            return HttpResponse("AuthorizationError", status=401)
+    else:
+        return HttpResponse("Method not allowed on /offers.", status = 405)
+
+@csrf_exempt
+@sensitive_post_parameters()
+def specificOffer(request, offerId):
+    if request.method == 'GET':
+        try:
+            specOffer = Offers.objects.all().values().filter(pk = offerId)[0]
+            return JsonResponse(specOffer, safe = False,  content_type = 'application/json')
+        
+        except DatabaseError:
+            return HttpResponse(DatabaseErrorMessage, status=400)
+
+    elif request.method == 'PATCH':
+        if request.user.is_authenticated:
+            if len(Users.objects.all().values().filter(id= request.user.id, membership = "administrator")) == 0:
+                return HttpResponse("Unauthorized", status=403)
+            posted_data = jsonHandling(request)
+            if posted_data == JSONDecodeFailMessage:
+                return HttpResponse(JSONDecodeFailMessage, status = 400)
+            else:
+                try:
+                    if 'description' in posted_data:
+                        Offers.objects.filter(id= offerId).update(description= posted_data['description'])
+                    if 'offer_perc' in posted_data:
+                        Offers.objects.filter(id= offerId).update(offer_perc= posted_data['offer_perc'])
+
+                    offerInfo = Offers.objects.all().values().filter(id= offerId)[0]
+                    return JsonResponse(offerInfo, safe = False, content_type = 'application/json', status = 201)
+                except DatabaseError:
+                    return HttpResponse(DatabaseErrorMessage, status=400)
+        else:
+            return HttpResponse("AuthorizationError", status=401)
+
+    elif request.method == 'DELETE':
+        if request.user.is_authenticated:
+            if len(Users.objects.all().values().filter(id= request.user.id, membership = "administrator")) == 0:
+                return HttpResponse("Unauthorized", status=403)
+            try:
+                Offers.objects.filter(id= offerId).delete()
+                return HttpResponse("The offer has been deleted.")
+            except DatabaseError:
+                return HttpResponse(DatabaseErrorMessage, status=400)
+        else:
+            return HttpResponse("AuthorizationError", status=401)
+
+    else :
+        return HttpResponse("Method not allowed on /offers/.", status = 405)
+
 
             
             

@@ -26,7 +26,7 @@ def register(request):
             email = form.cleaned_data['email']
             first_name = form.cleaned_data['first_name']
             last_name = form.cleaned_data['last_name']
-            user = Users.objects.create(username = username, password = password, first_name = first_name)
+            user = Users.objects.create_user(username = username, password = password, first_name = first_name)
             user.last_name = last_name
             user.email = email
             user.save()
@@ -42,12 +42,15 @@ def signin(request):
         return render(request, '../templates/auth/signin.html', {'form': form}, status = 200)
     elif request.method == 'POST':
         form = SigninForm(request.POST)
-        if not form.is_valid:
+        if not form.is_valid():
             return HttpResponse("Bad login form.", status = 400)
         else:
             username = form.cleaned_data['username']
             password = form.cleaned_data['password']
+            print(username)
+            print(password)
             user = authenticate(request, username=username, password=password)
+            print(user)
             if user is not None:
                 login(request, user)
                 return HttpResponseRedirect('/')
