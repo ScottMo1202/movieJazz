@@ -1,6 +1,7 @@
 from django.db import models
 from django.http import HttpResponse
 from django.core.validators import MaxValueValidator, MinValueValidator
+from django.contrib.auth.models import AbstractUser
 
 # Create your models here.
 
@@ -21,12 +22,7 @@ class Memberships(models.Model):
         else:
             return HttpResponse('This is not a valid membership', status = 400) 
 '''
-class Users(models.Model):
-    username = models.CharField(max_length = 50, null = False, unique = True)
-    password = models.CharField(max_length = 50, null = False)
-    first_name = models.CharField(max_length = 100, null = False)
-    last_name = models.CharField(max_length = 100, null = False)
-    email = models.EmailField(unique = True, null = False)
+class Users(AbstractUser):
     membership = models.CharField(max_length = 50, null = False, default = "normal")
 
     def save(self, *args, **kwargs):
