@@ -61,7 +61,7 @@ class Tickets(models.Model):
 
 class News(models.Model):
     body = models.TextField(max_length = 5000, null = False)
-    movie = models.ForeignKey(Movies, on_delete = models.CASCADE, null = False)
+    movies = models.ManyToManyField(Movies, null = False)
     date = models.DateTimeField(auto_now_add= True, null = False)
 
 class Reviews(models.Model):
