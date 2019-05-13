@@ -27,7 +27,7 @@ class Users(models.Model):
     first_name = models.CharField(max_length = 100, null = False)
     last_name = models.CharField(max_length = 100, null = False)
     email = models.EmailField(unique = True, null = False)
-    membership = models.ForeignKey(Memberships, default=lambda: Memberships.objects.get(id=1), on_delete=models.CASCADE)
+    membership = models.ForeignKey(Memberships, default=1, on_delete=models.CASCADE)
 
 class Movies(models.Model):
     name = models.CharField(max_length = 50, null = False)
@@ -98,7 +98,7 @@ class Transactions(models.Model):
     user = models.ForeignKey(Users, on_delete = models.CASCADE)
     ticket = models.ForeignKey(Tickets, on_delete = models.CASCADE)
     quantity = models.PositiveSmallIntegerField(validators=[MinValueValidator(1), MaxValueValidator(200)], null = False)
-    offer = models.ForeignKey(Offers, default=lambda: Memberships.objects.get(id=1), on_delete = models.CASCADE)
+    offer = models.ForeignKey(Offers, default=1, on_delete = models.CASCADE)
     total_price = models.DecimalField(max_digits=6, decimal_places=2, null=False)
     date = models.DateTimeField(auto_now_add= True)
 
