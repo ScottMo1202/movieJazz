@@ -1,0 +1,7 @@
+{% block content %}
+    <form action="/auth/register" method="POST">
+        {% csrf_token %}
+        {{ form | linebreaks}}
+        <input type="submit" value="Submit">
+    </form>
+{% endblock %}

@@ -5,15 +5,15 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 # Create your models here.
 
 class Theaters(models.Model):
-    name = models.CharField(required = True, max_length = 100, null = False)
-    street_number = models.CharField(required = True, max_length = 10, null = False)
-    street_name = models.CharField(required = True, max_length = 1000, null = False)
-    city = models.CharField(required = True, max_length = 500, null = False)
-    state = models.CharField(required = True, max_length = 2, null = False)
-    post_code = models.CharField(required = True, max_length = 5, null = False)
+    name = models.CharField(max_length = 100, null = False)
+    street_number = models.CharField(max_length = 10, null = False)
+    street_name = models.CharField(max_length = 1000, null = False)
+    city = models.CharField(max_length = 500, null = False)
+    state = models.CharField(max_length = 2, null = False)
+    post_code = models.CharField(max_length = 5, null = False)
 
 class Memberships(models.Model):
-    name = models.CharField(required = True, max_length = 100, null = False, unique = True)
+    name = models.CharField(max_length = 100, null = False, unique = True)
     
     def save(self, *args, **kwargs):
         if self.name in ['administrator', 'member', 'normal']:
@@ -22,23 +22,23 @@ class Memberships(models.Model):
             return HttpResponse('This is not a valid membership', status = 400) 
 
 class Users(models.Model):
-    username = models.CharField(required = True, max_length = 50, null = False, unique = True)
-    password = models.CharField(required = True, max_length = 50, null = False)
-    first_name = models.CharField(required = True, max_length = 100, null = False)
-    last_name = models.CharField(required = True, max_length = 100, null = False)
-    email = models.EmailField(required = True, unique = True, null = False)
-    membership = models.ForeignKey(Memberships, default=lambda: Memberships.objects.get(id=1), on_delete=models.CASCADE)
+    username = models.CharField(max_length = 50, null = False, unique = True)
+    password = models.CharField(max_length = 50, null = False)
+    first_name = models.CharField(max_length = 100, null = False)
+    last_name = models.CharField(max_length = 100, null = False)
+    email = models.EmailField(unique = True, null = False)
+    membership = models.ForeignKey(Memberships, default=1, on_delete=models.CASCADE)
 
 class Movies(models.Model):
-    name = models.CharField(required = True, max_length = 50, null = False)
+    name = models.CharField(max_length = 50, null = False)
     description = models.TextField(max_length = 5000, null = False)
-    runtime = models.PositiveIntegerField(required = True,validators=[MinValueValidator(1), MaxValueValidator(500)])
+    runtime = models.PositiveIntegerField(validators=[MinValueValidator(1), MaxValueValidator(500)])
 
 class Tickets(models.Model):
     movie = models.ForeignKey(Movies, on_delete = models.CASCADE)
-    time = models.DateTimeField(required = True)
+    time = models.DateTimeField(null = False)
     theater = models.ForeignKey(Theaters, on_delete = models.CASCADE)
-    price = models.DecimalField(required = True, max_digits=5, decimal_places=2)
+    price = models.DecimalField(max_digits=5, decimal_places=2, null = False)
     
     REGULAR = 'RE'
     IMAX = 'IM'
@@ -53,16 +53,16 @@ class Tickets(models.Model):
         (FOURD, '4D')
     )
     movie_type = models.CharField(
-        required = True,
         max_length=2,
         choices=MOVIE_TYPE_CHOICES,
-        default=REGULAR
+        default=REGULAR,
+        null = False
     )
 
 class News(models.Model):
-    body = models.TextField(required = True, max_length = 5000, null = False)
-    movie = models.ForeignKey(Movies, on_delete = models.CASCADE)
-    date = models.DateTimeField(auto_now_add= True)
+    body = models.TextField(max_length = 5000, null = False)
+    movie = models.ForeignKey(Movies, on_delete = models.CASCADE, null = False)
+    date = models.DateTimeField(auto_now_add= True, null = False)
 
 class Reviews(models.Model):
     body = models.TextField(max_length = 1000)
@@ -81,25 +81,25 @@ class Reviews(models.Model):
         (FIVE, 'Excellent')
     )
     rating = models.CharField(
-        required = True,
         max_length=1,
-        choices=MOVIE_RATING_CHOICES
+        choices=MOVIE_RATING_CHOICES,
+        null = False
     )
 
     user = models.ForeignKey(Users, on_delete = models.CASCADE)
     date = models.DateTimeField(auto_now_add= True)
 
 class Offers(models.Model):
-    offer_name = models.CharField(required = True, max_length = 150, null = False, unique = True)
-    offer_perc = models.DecimalField(required = True, max_digits=2, decimal_places=2)
-    description = models.CharField(required = True, max_length = 2000, null = False)
+    offer_name = models.CharField(max_length = 150, null = False, unique = True)
+    offer_perc = models.DecimalField(max_digits=2, decimal_places=2)
+    description = models.CharField(max_length = 2000, null = False)
 
 class Transactions(models.Model):
     user = models.ForeignKey(Users, on_delete = models.CASCADE)
     ticket = models.ForeignKey(Tickets, on_delete = models.CASCADE)
-    quantity = models.PositiveSmallIntegerField(required = True, validators=[MinValueValidator(1), MaxValueValidator(200)], null = False)
-    offer = models.ForeignKey(Offers, default=lambda: Memberships.objects.get(id=1), on_delete = models.CASCADE)
-    total_price = models.DecimalField(required = True, max_digits=6, decimal_places=2, null=False)
+    quantity = models.PositiveSmallIntegerField(validators=[MinValueValidator(1), MaxValueValidator(200)], null = False)
+    offer = models.ForeignKey(Offers, default=1, on_delete = models.CASCADE)
+    total_price = models.DecimalField(max_digits=6, decimal_places=2, null=False)
     date = models.DateTimeField(auto_now_add= True)
 
     def save(self, *args, **kwargs):
