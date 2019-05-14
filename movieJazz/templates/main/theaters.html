@@ -6,8 +6,10 @@
     {% for theater in theaters %}
         <h2>{{theater.name}}</h2>
         <ul>
-            <li>Address: {{theater.street_number}} {{theater.street_name}}, {{theater.city}} {{theater.state}}, {{theater.postal_code}}</li>
-            <li></li>
+            <li>Street Address: {{theater.street_number}} {{theater.street_name}}</li>
+            <li>City: {{theater.city}}</li>
+            <li>State: {{theater.state}}</li>
+            <li>ZIP Code: {{theater.postal_code}}</li>
         </ul>
     {% endfor %}
     {% endblock %}
