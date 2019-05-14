@@ -46,6 +46,7 @@ def home(request):
     """ This view handles rending the main page of the website with the all the 
     links to different areas of the page such as signin/signout, movies,
     offers, etc. """
+    # go to the home page
     if request.method == 'GET':
         return render(request, '../templates/main/index.html', status = 200)
     else:
@@ -56,6 +57,7 @@ def home(request):
 def jsonHandling(request):
     """ This function's main purpose is to manage error handling for 
     when retrieving and decoding the JSON from the request body. """
+    # check if there are errors in the posted data
     try:
         data = json.loads(request.body.decode("utf-8"))
     except json.JSONDecodeError:
@@ -83,6 +85,7 @@ def theaters(request):
         except Exception:
             return HttpResponse(ExceptionMessage, status = 400)
         else:
+            # return all theaters into the template
             return render(
                 request, 
                 '../templates/main/theaters.html', 
@@ -90,9 +93,11 @@ def theaters(request):
                 status = 200
                 )
     elif request.method == 'POST':
+        # if the user is logged in
         if not request.user.is_authenticated:
              return HttpResponse(AuthorizationError, status = 401)
         current_user = request.user
+        # check if the user has right authorization
         if current_user.membership != 'administrator' and current_user.membership != 'seller':
             return HttpResponse(AuthorizationError, status = 401)
         else:
@@ -101,6 +106,7 @@ def theaters(request):
                 return HttpResponse(JSONDecodeFailMessage, status = 400)
             else:
                 try:
+                    # create a new theater
                     new_theater = Theaters.objects.create(
                         name = posted_data['name'], 
                         street_number = posted_data['street_number'], 
@@ -118,6 +124,7 @@ def theaters(request):
                 except Exception:
                     return HttpResponse(ExceptionMessage, status = 400)
                 else:
+                    # return the newly created theater as a json object
                     return JsonResponse(
                         new_theater_info, 
                         safe = False, 
@@ -138,6 +145,7 @@ def specificTheater(request, theater_id):
     website."""
     if request.method == 'GET':
         try: 
+            # filter the specified theater
             the_theater = Theaters.objects.filter(id = theater_id).get()
             the_theater_data = {
                 "name": the_theater.name, 
@@ -152,6 +160,7 @@ def specificTheater(request, theater_id):
         except Exception:
             return HttpResponse(ExceptionMessage, status = 400)
         else:
+            # return the theater data as a json object
             return JsonResponse(
                 the_theater_data, 
                 safe = False, 
@@ -172,6 +181,8 @@ def specificTheater(request, theater_id):
                 try:
                     the_theater = Theaters.objects.filter(id = theater_id).get()
                     changed_data = {}
+                    # checks what types of data the user wants to modify for the 
+                    # theater
                     if 'name' in posted_data:
                         the_theater.name = posted_data['name']
                         changed_data['name'] = posted_data['name']
@@ -195,12 +206,14 @@ def specificTheater(request, theater_id):
                 except Exception:
                     return HttpResponse(ExceptionMessage, status = 400)
                 else:
+                    # return the modified data as a json object
                     return JsonResponse(
                         changed_data, 
                         safe = False, 
                         content_type = 'application/json', 
                         status = 201
                         )
+    # delete the specified theater
     elif request.method == 'DELETE':
         if not request.user.is_authenticated:
              return HttpResponse(AuthorizationError, status = 401)
@@ -213,6 +226,8 @@ def specificTheater(request, theater_id):
         except Exception:
             return HttpResponse(ExceptionMessage, status = 400)
         else:
+            # return a plain text message if the theater is deleted
+            # successfully
             return HttpResponse('Deleted', status = 200)
     else:
         return HttpResponse(BadRequestMessage, status = 405)
@@ -231,12 +246,14 @@ def tickets(request, theater_id):
     current_user = request.user
     if request.method == "GET":
         try:
+            # get all tickets
             all_tickets = list(Tickets.objects.filter(theater = theater_id).all().values())
         except DatabaseError:
             return HttpResponse(DatabaseError, status = 400)
         except Exception:
             return HttpResponse(ExceptionMessage, status = 400)
         else:
+            # return all tickets data as a json object
             return JsonResponse(
                 all_tickets, 
                 safe = False, 
@@ -247,11 +264,12 @@ def tickets(request, theater_id):
     elif request.method == 'POST':
         if not current_user.is_authenticated:
             return HttpResponse(AuthorizationError, status = 401)
-        
+        # checks the user's authorization
         if current_user.membership == 'administrator':
             posted_data = jsonHandling(request)
             if posted_data == JSONDecodeFailMessage:
                 return HttpResponse(JSONDecodeFailMessage, status = 400)
+                # try to create a new ticket
             try:
                 the_ticket_movie = Movies.objects.filter(id = posted_data['movie']).get()
                 the_ticket_theater = Theaters.objects.filter(id = theater_id).get()
@@ -274,6 +292,7 @@ def tickets(request, theater_id):
             except Exception:
                 return HttpResponse(ExceptionMessage, status = 400)
             else:
+                # return the new ticket data as a json object if created successfully
                 return JsonResponse(
                     ticketInfo, 
                     safe = False, 
@@ -291,6 +310,7 @@ def tickets(request, theater_id):
             if posted_data == JSONDecodeFailMessage:
                 return HttpResponse(JSONDecodeFailMessage, status = 400)
             try:
+                # check if the ticket is available
                 toBeDeleted = Tickets.objects.filter(id = posted_data['id'], theater= theater_id)
                 if toBeDeleted is None:
                     return HttpResponse('Ticket not available in Theater.', status = 200)
@@ -326,6 +346,7 @@ def transactions(request):
     else:
         if request.method == 'GET':
             try:
+                # get all transactions and return as a list
                 transaction_list = list(Transactions.objects.all().values().filter(user= request.user.id))
                 returnList = []
                 for tran in transaction_list:
@@ -335,6 +356,7 @@ def transactions(request):
                     curTran['total_price'] = tran.total_price
                     curTran['date'] = tran.date
                     returnList.append(curTran)
+                    # return as a json object
                 return JsonResponse(returnList, safe = False, content_type = 'application/json')
             except DatabaseError:
                 return HttpResponse(DatabaseError, status = 400)
@@ -345,11 +367,13 @@ def transactions(request):
                 
         
         elif request.method == 'POST':
+            # check the user membership
             if current_user.membership == 'administrator':
                 posted_data = jsonHandling(request)
                 if posted_data == JSONDecodeFailMessage:
                     return HttpResponse(JSONDecodeFailMessage, status = 400)
                 try:
+                    # try to create a new transaction
                     the_user = Users.objects.filter(id = posted_data['user']).get()
                     the_ticket = Tickets.objects.filter(id = posted_data['ticket']).get()
                     the_quantity = posted_data['quantity']
@@ -377,6 +401,7 @@ def transactions(request):
                 except Exception:
                     return HttpResponse(ExceptionMessage, status = 400)
                 else:
+                    # return the newly created transaction as a json object
                     return JsonResponse(
                         transaction_info, 
                         safe = False, 
@@ -393,6 +418,7 @@ def transactions(request):
                     return HttpResponse(JSONDecodeFailMessage, status = 400)
                 try:
                     if 'id' in posted_data:
+                        # try to check what information the user wants to modify
                         curTran = Transactions.objects.filter(id=posted_data['id'])
                         if 'quantity' in posted_data:
                             curTran.update(quantity= posted_data['quantity'])
@@ -430,6 +456,7 @@ def transactions(request):
                 if posted_data == JSONDecodeFailMessage:
                     return HttpResponse(JSONDecodeFailMessage, status = 400)
                 try:
+                    #catch and delte the specified transaction
                     Transactions.objects.filter(id = posted_data['id']).delete()
                 except DatabaseError:
                     return HttpResponse(DatabaseError, status = 400)
@@ -455,6 +482,7 @@ def movies(request):
     name, description, and runtime specified. """
     if request.method == 'GET':
         try:
+            # get all movies and return all movie data in the template
             moviesList = list(Movies.objects.all().values()) 
             return render(
                 request, 
@@ -474,16 +502,17 @@ def movies(request):
                 membership = "administrator"
                 )) == 0:
                 return HttpResponse("Unauthorized", status=403)
-            
             posted_data = jsonHandling(request)
             if posted_data == JSONDecodeFailMessage:
                 return HttpResponse(JSONDecodeFailMessage, status = 400)
             else:
                 try:
+                    # create a new movie
                     newMovie = Movies.objects.create(name = posted_data['name'], 
                     description = posted_data['description'], runtime = posted_data['runtime'])
                     newMovie.save()
                     movieInfo = Movies.objects.all().values().filter(pk=newMovie.pk)[0]
+                    # return the newly created movie as a json object
                     return JsonResponse(
                         movieInfo, 
                         safe = False, 
