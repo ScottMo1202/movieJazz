@@ -1,11 +1,10 @@
 # movieJazz
 
-You must provide documentation of your endpoints and database in the README.md file. You should use markdown and code blocks where appropriate to make it easier to find things in the document.
+We created an admin account automatically as the server starts, some requests are restricted only to admins. This will be mentioned in the later as well.  <br />
+admin username: admin<br />
+admin password: admin<br />
 
-For each endpoint, include: endpoint route, what behavior it has (implemented HTTP method, status codes, error messages it can return, what it changes in the database, who use the route).
-
-For any non-GET HTTP method, you should include an example input and output. For example, the user might post a JSON object with 3 fields and get some JSON response back.
-
+For every newly registered user, the default membership is normal.<br />
 ### Endpoints
 * /main/theaters: refers to all theaters<br />
    * GET: Respond with a list of all of the theaters in the database with a status of 200. It will return Database error message if bugs happen. Anyone can do this even without any authentification.
