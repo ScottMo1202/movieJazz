@@ -15,25 +15,37 @@ KeyErrorMessage = "Erros when accessing the object"
 ExceptionMessage = "Some Exceptions Happened"
 AuthorizationError = "Not Authorized"
 
+
 def defaultOffer():
     """ This will create an offer with 0% off, which is specifically for no offer used.
     The offer will only be created if it does not exist already. """
 
-    # Checking if general channel exists
-    if len(Offers.objects.all().values().filter(offer_name="No Offer", offer_perc=.00, description = "No Offer")) == 0:
+    # Checking if 'No Offer' exists
+    if len(Offers.objects.all().values().filter(
+        offer_name="No Offer", offer_perc=.00, description = "No Offer")) == 0:
         
-        # Try to create admin user if it does not already exist
+        # Try to create default offer if it does not already exist
         try:
-            offer = Offers.objects.create(offer_name = "No Offer", offer_perc =.00 , description = "No Offer")
+            offer = Offers.objects.create(
+                offer_name = "No Offer", 
+                offer_perc =.00 , 
+                description = "No Offer"
+                )
             offer.save()
         
         except DatabaseError:
             return HttpResponse(DatabaseErrorMessage, status=400)
+        except Exception:
+            return HttpResponse(ExceptionMessage, status = 400)
+
 defaultOffer()
 
 @csrf_exempt
 @sensitive_post_parameters()
 def home(request):
+    """ This view handles rending the main page of the website with the all the 
+    links to different areas of the page such as signin/signout, movies,
+    offers, etc. """
     if request.method == 'GET':
         return render(request, '../templates/main/index.html', status = 200)
     else:
@@ -42,12 +54,14 @@ def home(request):
 @csrf_exempt
 @sensitive_post_parameters()
 def jsonHandling(request):
+    """ This function's main purpose is to manage error handling for 
+    when retrieving and decoding the JSON from the request body. """
     try:
         data = json.loads(request.body.decode("utf-8"))
     except json.JSONDecodeError:
         return JSONDecodeFailMessage
     except Exception:
-        return JSONDecodeFailMessage
+        return ExceptionMessage
     else:
         return data
 
@@ -55,13 +69,26 @@ def jsonHandling(request):
 @csrf_exempt
 @sensitive_post_parameters()
 def theaters(request):
+    """ This view handles all requests made to /theaters route. When a
+    GET request is made, all the theaters currently within the website
+    database will be displayed, including their information about address.
+    When a POST request is made (only admins can add theaters to website)
+    new Theaters can be added to database, by specifying name and address 
+    info."""
     if request.method == 'GET':
         try:
             theater_list = list(Theaters.objects.all().values())
         except DatabaseError:
             return HttpResponse(DatabaseErrorMessage, status = 400)
+        except Exception:
+            return HttpResponse(ExceptionMessage, status = 400)
         else:
-            return render(request, '../templates/main/theaters.html', {'theaters': theater_list} ,status = 200)
+            return render(
+                request, 
+                '../templates/main/theaters.html', 
+                {'theaters': theater_list},
+                status = 200
+                )
     elif request.method == 'POST':
         if not request.user.is_authenticated:
              return HttpResponse(AuthorizationError, status = 401)
@@ -74,33 +101,63 @@ def theaters(request):
                 return HttpResponse(JSONDecodeFailMessage, status = 400)
             else:
                 try:
-                    new_theater = Theaters.objects.create(name = posted_data['name'], 
-                    street_number = posted_data['street_number'], street_name = posted_data['street_name'], 
-                    city = posted_data['city'], state = posted_data['state'], post_code = posted_data['post_code'])
+                    new_theater = Theaters.objects.create(
+                        name = posted_data['name'], 
+                        street_number = posted_data['street_number'], 
+                        street_name = posted_data['street_name'], 
+                        city = posted_data['city'], 
+                        state = posted_data['state'], 
+                        post_code = posted_data['post_code']
+                        )
                     new_theater.save()
                     new_theater_info = Theaters.objects.all().values().filter(pk = new_theater.pk)[0]
                 except DatabaseError:
                     return HttpResponse(DatabaseErrorMessage, status = 400)
                 except KeyError:
                     return HttpResponse(KeyErrorMessage, status = 400)
+                except Exception:
+                    return HttpResponse(ExceptionMessage, status = 400)
                 else:
-                    return JsonResponse(new_theater_info, safe = False, content_type = 'application/json', status = 201)
+                    return JsonResponse(
+                        new_theater_info, 
+                        safe = False, 
+                        content_type = 'application/json', 
+                        status = 201
+                        )
     else:
         return HttpResponse(BadRequestMessage, status = 405)
 
 @csrf_exempt
 @sensitive_post_parameters()
 def specificTheater(request, theater_id):
+    """ This view handles all requests made to /theaters/<id>. When a GET
+    request is made, all the information specific to the theater is displayed.
+    When a PATCH request is made (only admins can patch and delete) information
+    about the theater such as name and address can be changed and saved. When 
+    a DELETE request is made, the specific theater will be deleted from the
+    website."""
     if request.method == 'GET':
         try: 
             the_theater = Theaters.objects.filter(id = theater_id).get()
-            the_theater_data = {"name": the_theater.name, 'street_number': the_theater.street_number, 
-                            'street_name': the_theater.street_name, 'city': the_theater.city,
-                            'state': the_theater.state, 'post_code': the_theater.post_code}
+            the_theater_data = {
+                "name": the_theater.name, 
+                'street_number': the_theater.street_number, 
+                'street_name': the_theater.street_name, 
+                'city': the_theater.city, 
+                'state': the_theater.state, 
+                'post_code': the_theater.post_code
+                }
         except DatabaseError:
             return HttpResponse(DatabaseErrorMessage, status = 400)
+        except Exception:
+            return HttpResponse(ExceptionMessage, status = 400)
         else:
-            return JsonResponse(the_theater_data, safe = False, content_type = 'application/json', status = 201)
+            return JsonResponse(
+                the_theater_data, 
+                safe = False, 
+                content_type = 'application/json', 
+                status = 201
+                )
     elif request.method == 'PATCH':
         if not request.user.is_authenticated:
              return HttpResponse(AuthorizationError, status = 401)
@@ -135,8 +192,15 @@ def specificTheater(request, theater_id):
                     return HttpResponse(KeyErrorMessage, status = 400)
                 except DatabaseError:
                     return HttpResponse(DatabaseError, status = 400)
+                except Exception:
+                    return HttpResponse(ExceptionMessage, status = 400)
                 else:
-                    return JsonResponse(changed_data, safe = False, content_type = 'application/json', status = 201)
+                    return JsonResponse(
+                        changed_data, 
+                        safe = False, 
+                        content_type = 'application/json', 
+                        status = 201
+                        )
     elif request.method == 'DELETE':
         if not request.user.is_authenticated:
              return HttpResponse(AuthorizationError, status = 401)
@@ -146,6 +210,8 @@ def specificTheater(request, theater_id):
             Theaters.objects.filter(id= theater_id).delete()
         except DatabaseError:
             return HttpResponse(DatabaseError, status = 400)
+        except Exception:
+            return HttpResponse(ExceptionMessage, status = 400)
         else:
             return HttpResponse('Deleted', status = 200)
     else:
@@ -154,14 +220,29 @@ def specificTheater(request, theater_id):
 @csrf_exempt
 @sensitive_post_parameters()
 def tickets(request, theater_id):
+    """ This view handles all requests made to /theaters/<id>/tickets.
+    When a GET request is made, all tickets available in the specific 
+    theater will be displayed. When a POST (only admins can post and delete)
+    request is made, new tickets can be added to the theater when infomation
+    of about movie, price movie type, and time are provided. When a DELETE 
+    request is made specific tickets can be deleted from the theater. Only
+    tickets for the specified theater can be deleted.
+    """
     current_user = request.user
     if request.method == "GET":
         try:
             all_tickets = list(Tickets.objects.filter(theater = theater_id).all().values())
         except DatabaseError:
             return HttpResponse(DatabaseError, status = 400)
+        except Exception:
+            return HttpResponse(ExceptionMessage, status = 400)
         else:
-            return JsonResponse(all_tickets, safe = False, content_type = 'application/json', status = 200)
+            return JsonResponse(
+                all_tickets, 
+                safe = False, 
+                content_type = 'application/json', 
+                status = 200
+                )
     
     elif request.method == 'POST':
         if not current_user.is_authenticated:
@@ -177,15 +258,28 @@ def tickets(request, theater_id):
                 the_ticket_time = posted_data['time']
                 the_ticket_price = posted_data['price']
                 the_ticket_movie_type = posted_data['movie_type']
-                new_ticket = Tickets.objects.create(movie = the_ticket_movie, time = the_ticket_time,
-                            theater = the_ticket_theater, price = the_ticket_price,
-                            movie_type = the_ticket_movie_type)
+                new_ticket = Tickets.objects.create(
+                    movie = the_ticket_movie, 
+                    time = the_ticket_time, 
+                    theater = the_ticket_theater, 
+                    price = the_ticket_price, 
+                    movie_type = the_ticket_movie_type
+                    )
                 new_ticket.save()
                 ticketInfo = Tickets.objects.all().values().filter(pk = new_ticket.pk)[0]
             except DatabaseError:
                 return HttpResponse(DatabaseError, status = 400)
+            except KeyError:
+                return HttpResponse(KeyErrorMessage, status = 400)
+            except Exception:
+                return HttpResponse(ExceptionMessage, status = 400)
             else:
-                return JsonResponse(ticketInfo, safe = False, content_type = 'application/json', status = 201)
+                return JsonResponse(
+                    ticketInfo, 
+                    safe = False, 
+                    content_type = 'application/json', 
+                    status = 201
+                    )
         else:
             return HttpResponse(AuthorizationError, status = 403)
     
@@ -203,6 +297,10 @@ def tickets(request, theater_id):
                 toBeDeleted.delete()
             except DatabaseError:
                 return HttpResponse(DatabaseError, status = 400)
+            except KeyError:
+                return HttpResponse(KeyErrorMessage, status = 400)
+            except Exception:
+                return HttpResponse(ExceptionMessage, status = 400)
             else:
                 return HttpResponse('Ticket Deleted', status = 200)
         else:
@@ -214,6 +312,14 @@ def tickets(request, theater_id):
 @csrf_exempt
 @sensitive_post_parameters()
 def transactions(request):
+    """ This view handles all requests made to /transactions. When a GET request is made
+    (user need to be logged in and authenticated in order to access any methods)
+    the specific user's transactions will display. When a POST request is made, 
+    a new transaction is added to the database, with movie, quantity, user, and offer
+    info are specified (only admins can make post, patch, and delete requests).
+    When a PATCH request is made, specific transaction entries can be updated, by either
+    changing quantity, or adding an offer. When a DELETE request is made, specificied
+    transactions can be deleted."""
     current_user = request.user
     if not current_user.is_authenticated:
         return HttpResponse(AuthorizationError, status = 401)
@@ -232,6 +338,10 @@ def transactions(request):
                 return JsonResponse(returnList, safe = False, content_type = 'application/json')
             except DatabaseError:
                 return HttpResponse(DatabaseError, status = 400)
+            except KeyError:
+                return HttpResponse(KeyErrorMessage, status = 400)
+            except Exception:
+                return HttpResponse(ExceptionMessage, status = 400)
                 
         
         elif request.method == 'POST':
@@ -244,19 +354,35 @@ def transactions(request):
                     the_ticket = Tickets.objects.filter(id = posted_data['ticket']).get()
                     the_quantity = posted_data['quantity']
                     offer = Offers.objects.filter(id = posted_data['offer']).get()
-                    the_total_price = float(the_quantity) * float(the_ticket.price) * float(1 - offer.offer_perc)
+                    the_total_price = float(the_quantity) * float(the_ticket.price) * float(
+                        1 - offer.offer_perc)
+                    
                     the_total_price = round(the_total_price, 2)
-                    new_transaction = Transactions.objects.create(user = the_user, ticket = the_ticket,
-                                        quantity = the_quantity, offer = offer, total_price = the_total_price)
+                    new_transaction = Transactions.objects.create(
+                        user = the_user, 
+                        ticket = the_ticket, 
+                        quantity = the_quantity, 
+                        offer = offer, 
+                        total_price = the_total_price
+                        )
                     new_transaction.save()
-                    transaction_info = Transactions.objects.all().values().filter(pk = new_transaction.pk)[0]
+                    transaction_info = Transactions.objects.all().values().filter(
+                        pk = new_transaction.pk
+                        )[0]
                     
                 except DatabaseError:
                     return HttpResponse(DatabaseError, status = 400)
                 except KeyError:
                     return HttpResponse(DatabaseError, status = 400)
+                except Exception:
+                    return HttpResponse(ExceptionMessage, status = 400)
                 else:
-                    return JsonResponse(transaction_info, safe = False, content_type = 'application/json', status = 201)
+                    return JsonResponse(
+                        transaction_info, 
+                        safe = False, 
+                        content_type = 'application/json', 
+                        status = 201
+                        )
             else:
                 return HttpResponse(AuthorizationError, status = 403)
         
@@ -265,23 +391,36 @@ def transactions(request):
                 posted_data = jsonHandling(request)
                 if posted_data == JSONDecodeFailMessage:
                     return HttpResponse(JSONDecodeFailMessage, status = 400)
-                if 'id' in posted_data:
-                    curTran = Transactions.objects.filter(id=posted_data['id'])
-                    if 'quantity' in posted_data:
-                        curTran.update(quantity= posted_data['quantity'])
-                    if 'offer' in posted_data:
-                        newDisc = Offers.objects.get(id=posted_data['offer'])
-                        curTran.update(offer= newDisc)
-                    
-                    the_total_price = float(curTran.get().quantity) * float(curTran.get().ticket.price) * float(1 - curTran.get().offer.offer_perc)
-                    the_total_price = round(the_total_price, 2)
-                    curTran.update(total_price= the_total_price)
+                try:
+                    if 'id' in posted_data:
+                        curTran = Transactions.objects.filter(id=posted_data['id'])
+                        if 'quantity' in posted_data:
+                            curTran.update(quantity= posted_data['quantity'])
+                        if 'offer' in posted_data:
+                            newDisc = Offers.objects.get(id=posted_data['offer'])
+                            curTran.update(offer= newDisc)
+                        
+                        the_total_price = float(curTran.get().quantity) * float(
+                            curTran.get().ticket.price) * float(1 - curTran.get().offer.offer_perc)
 
-                    tranInfo = Transactions.objects.all().values().filter(id= posted_data['id'])[0]
-                    return JsonResponse(tranInfo, safe = False, content_type = 'application/json', status = 201)
+                        the_total_price = round(the_total_price, 2)
+                        curTran.update(total_price= the_total_price)
 
-                else:
-                    return HttpResponse(BadRequestMessage, status = 405)
+                        tranInfo = Transactions.objects.all().values().filter(id= posted_data['id'])[0]
+                        return JsonResponse(
+                            tranInfo, 
+                            safe = False, 
+                            content_type = 'application/json', 
+                            status = 201
+                            )
+                    else:
+                        return HttpResponse(BadRequestMessage, status = 405)
+                except DatabaseError:
+                    return HttpResponse(DatabaseError, status = 400)
+                except KeyError:
+                    return HttpResponse(KeyErrorMessage, status = 400)
+                except Exception:
+                    return HttpResponse(ExceptionMessage, status = 400)
             else:
                 return HttpResponse(AuthorizationError, status = 403)
         
@@ -294,6 +433,10 @@ def transactions(request):
                     Transactions.objects.filter(id = posted_data['id']).delete()
                 except DatabaseError:
                     return HttpResponse(DatabaseError, status = 400)
+                except KeyError:
+                    return HttpResponse(KeyErrorMessage, status = 400)
+                except Exception:
+                    return HttpResponse(ExceptionMessage, status = 400)
                 else:
                     return HttpResponse('Transaction Deleted', status = 200)
             else:
@@ -304,17 +447,32 @@ def transactions(request):
 @csrf_exempt
 @sensitive_post_parameters()
 def movies(request):
+    """ This view handles all requests made to /movies route. When a GET
+    request is made, all movies will be displayed as a webpage, with all
+    movie information such as name, description, and runtime. When a POST
+    request is made (only admins can make posts, and add movies to database)
+    new movie entries can be added to the website, with information like
+    name, description, and runtime specified. """
     if request.method == 'GET':
         try:
             moviesList = list(Movies.objects.all().values()) 
-            # return JsonResponse(moviesList, safe = False,  content_type = 'application/json')
-            return render(request, '../templates/main/movies.html', {'movieList': moviesList}, status = 200)
+            return render(
+                request, 
+                '../templates/main/movies.html', 
+                {'movieList': moviesList}, 
+                status = 200
+                )
         except DatabaseError:
             return HttpResponse(DatabaseErrorMessage, status=400)
+        except Exception:
+            return HttpResponse(ExceptionMessage, status = 400)
     
     elif request.method == 'POST':
         if request.user.is_authenticated:
-            if len(Users.objects.all().values().filter(id= request.user.id, membership = "administrator")) == 0:
+            if len(Users.objects.all().values().filter(
+                id= request.user.id, 
+                membership = "administrator"
+                )) == 0:
                 return HttpResponse("Unauthorized", status=403)
             
             posted_data = jsonHandling(request)
@@ -326,9 +484,18 @@ def movies(request):
                     description = posted_data['description'], runtime = posted_data['runtime'])
                     newMovie.save()
                     movieInfo = Movies.objects.all().values().filter(pk=newMovie.pk)[0]
-                    return JsonResponse(movieInfo, safe = False, content_type = 'application/json', status = 201)
+                    return JsonResponse(
+                        movieInfo, 
+                        safe = False, 
+                        content_type = 'application/json', 
+                        status = 201
+                        )
                 except DatabaseError:
                     return HttpResponse(DatabaseErrorMessage, status=400)
+                except KeyError:
+                    return HttpResponse(KeyErrorMessage, status = 400)
+                except Exception:
+                    return HttpResponse(ExceptionMessage, status = 400)
         else:
             return HttpResponse("AuthorizationError", status=401)
     else:
@@ -337,6 +504,13 @@ def movies(request):
 @csrf_exempt
 @sensitive_post_parameters()
 def specificMovie(request, movieId):
+    """ This view handles all requests made to /movies/<id> route.
+    When a GET request is made, information about the specific movie
+    is displayed. When a PATCH request is made (only admins can
+    patch and delete movie entries) information about the specific 
+    movie can be changed, such as description and runtime. When a 
+    DELETE request is made specific movies can be deleted from the
+    website."""
     if request.method == 'GET':
         try:
             specMovie = Movies.objects.all().values().filter(pk = movieId)[0]
@@ -344,10 +518,15 @@ def specificMovie(request, movieId):
         
         except DatabaseError:
             return HttpResponse(DatabaseErrorMessage, status=400)
+        except Exception:
+            return HttpResponse(ExceptionMessage, status = 400)
 
     elif request.method == 'PATCH':
         if request.user.is_authenticated:
-            if len(Users.objects.all().values().filter(id= request.user.id, membership = "administrator")) == 0:
+            if len(Users.objects.all().values().filter(
+                id= request.user.id, 
+                membership = "administrator"
+                )) == 0:
                 return HttpResponse("Unauthorized", status=403)
             posted_data = jsonHandling(request)
             if posted_data == JSONDecodeFailMessage:
@@ -357,21 +536,36 @@ def specificMovie(request, movieId):
                     if 'description' in posted_data:
                         Movies.objects.filter(id= movieId).update(description= posted_data['description'])
                     movieInfo = Movies.objects.all().values().filter(id= movieId)[0]
-                    return JsonResponse(movieInfo, safe = False, content_type = 'application/json', status = 201)
+                    return JsonResponse(
+                        movieInfo, 
+                        safe = False, 
+                        content_type = 'application/json', 
+                        status = 201
+                        )
                 except DatabaseError:
                     return HttpResponse(DatabaseErrorMessage, status=400)
+                except KeyError:
+                    return HttpResponse(KeyErrorMessage, status = 400)
+                except Exception:
+                    return HttpResponse(ExceptionMessage, status = 400)
         else:
             return HttpResponse("AuthorizationError", status=401)
 
     elif request.method == 'DELETE':
         if request.user.is_authenticated:
-            if len(Users.objects.all().values().filter(id= request.user.id, membership = "administrator")) == 0:
-                return HttpResponse("Unauthorized", status=403)
             try:
+                if len(Users.objects.all().values().filter(
+                    id= request.user.id, 
+                    membership = "administrator"
+                    )) == 0:
+                    return HttpResponse("Unauthorized", status=403)
+            
                 Movies.objects.filter(id= movieId).delete()
                 return HttpResponse("The movie has been deleted.")
             except DatabaseError:
                 return HttpResponse(DatabaseErrorMessage, status=400)
+            except Exception:
+                return HttpResponse(ExceptionMessage, status = 400)
         else:
             return HttpResponse("AuthorizationError", status=401)
 
@@ -381,15 +575,34 @@ def specificMovie(request, movieId):
 @csrf_exempt
 @sensitive_post_parameters()
 def users(request):
+    """ This view handles all requests made to /users route. Only admin
+    can access requests to this route in order to access all user information.
+    When a GET request is made, all users and their information are displayed. """
     if request.user.is_authenticated:
-        if len(Users.objects.all().values().filter(id= request.user.id, membership = "administrator")) == 0:
-            return HttpResponse("Unauthorized", status=403)
+        try:
+            if len(Users.objects.all().values().filter(
+                id= request.user.id, 
+                membership = "administrator"
+                )) == 0:
+                return HttpResponse("Unauthorized", status=403)
+        except DatabaseError:
+            return HttpResponse(DatabaseErrorMessage, status=400)
+        except Exception:
+            return HttpResponse(ExceptionMessage, status = 400)
+        
         if request.method == 'GET':
             try:
                 userList = list(Users.objects.all().values()) 
-                return render(request, '../templates/main/users.html', {'userList': userList}, status = 200)
+                return render(
+                    request, 
+                    '../templates/main/users.html', 
+                    {'userList': userList}, 
+                    status = 200
+                    )
             except DatabaseError:
                 return HttpResponse(DatabaseErrorMessage, status=400)
+            except Exception:
+                return HttpResponse(ExceptionMessage, status = 400)
         else :
             return HttpResponse("Method not allowed on /users.", status = 405)
     else:
@@ -399,16 +612,32 @@ def users(request):
 @csrf_exempt
 @sensitive_post_parameters()
 def offers(request):
+    """ This view handles all requests made to /offers route. When a 
+    GET request is made, all offers that are active on the website
+    are displayed, including information like name and description.
+    When a POST request is made (only admins can post new offers)
+    new offers can be added to the website, by specifying name, 
+    discount, and description."""
     if request.method == 'GET':
         try:
             offersList = list(Offers.objects.all().values()) 
-            return render(request, '../templates/main/offers.html', {'offersList': offersList}, status = 200)
+            return render(
+                request, 
+                '../templates/main/offers.html', 
+                {'offersList': offersList}, 
+                status = 200
+                )
         except DatabaseError:
             return HttpResponse(DatabaseErrorMessage, status=400)
+        except Exception:
+            return HttpResponse(ExceptionMessage, status = 400)
     
     elif request.method == 'POST':
         if request.user.is_authenticated:
-            if len(Users.objects.all().values().filter(id= request.user.id, membership = "administrator")) == 0:
+            if len(Users.objects.all().values().filter(
+                id= request.user.id, 
+                membership = "administrator"
+                )) == 0:
                 return HttpResponse("Unauthorized", status=403)
             
             posted_data = jsonHandling(request)
@@ -416,13 +645,25 @@ def offers(request):
                 return HttpResponse(JSONDecodeFailMessage, status = 400)
             else:
                 try:
-                    newOffer = Offers.objects.create(offer_name = posted_data['offer_name'], 
-                    offer_perc = posted_data['offer_perc'], description = posted_data['description'])
+                    newOffer = Offers.objects.create(
+                        offer_name = posted_data['offer_name'], 
+                        offer_perc = posted_data['offer_perc'], 
+                        description = posted_data['description']
+                        )
                     newOffer.save()
                     offerInfo = Offers.objects.all().values().filter(pk=newOffer.pk)[0]
-                    return JsonResponse(offerInfo, safe = False, content_type = 'application/json', status = 201)
+                    return JsonResponse(
+                        offerInfo, 
+                        safe = False, 
+                        content_type = 'application/json', 
+                        status = 201
+                        )
                 except DatabaseError:
                     return HttpResponse(DatabaseErrorMessage, status=400)
+                except KeyError:
+                    return HttpResponse(KeyErrorMessage, status = 400)
+                except Exception:
+                    return HttpResponse(ExceptionMessage, status = 400)
         else:
             return HttpResponse("AuthorizationError", status=401)
     else:
@@ -431,6 +672,13 @@ def offers(request):
 @csrf_exempt
 @sensitive_post_parameters()
 def specificOffer(request, offerId):
+    """ This view handles are requests made to /offer/<id> route. 
+    When a GET request is made, information about the specific offer
+    is displayed. When a PATCH request is made (only admin can patch
+    and delete offers on website) specific offer information can
+    be updated such as the discount amount, and description. When a
+    DELETE request is made specific offers can be deleted from the 
+    website."""
     if request.method == 'GET':
         try:
             specOffer = Offers.objects.all().values().filter(pk = offerId)[0]
@@ -438,11 +686,24 @@ def specificOffer(request, offerId):
         
         except DatabaseError:
             return HttpResponse(DatabaseErrorMessage, status=400)
+        except Exception:
+            return HttpResponse(ExceptionMessage, status = 400)
 
     elif request.method == 'PATCH':
         if request.user.is_authenticated:
-            if len(Users.objects.all().values().filter(id= request.user.id, membership = "administrator")) == 0:
-                return HttpResponse("Unauthorized", status=403)
+            try:
+                if len(Users.objects.all().values().filter(
+                    id= request.user.id, 
+                    membership = "administrator"
+                    )) == 0:
+                    return HttpResponse("Unauthorized", status=403)
+            except DatabaseError:
+                return HttpResponse(DatabaseErrorMessage, status = 400)
+            except KeyError:
+                return HttpResponse(KeyErrorMessage, status = 400)
+            except Exception:
+                return HttpResponse(ExceptionMessage, status = 400)
+
             posted_data = jsonHandling(request)
             if posted_data == JSONDecodeFailMessage:
                 return HttpResponse(JSONDecodeFailMessage, status = 400)
@@ -454,21 +715,37 @@ def specificOffer(request, offerId):
                         Offers.objects.filter(id= offerId).update(offer_perc= posted_data['offer_perc'])
 
                     offerInfo = Offers.objects.all().values().filter(id= offerId)[0]
-                    return JsonResponse(offerInfo, safe = False, content_type = 'application/json', status = 201)
+                    return JsonResponse(
+                        offerInfo, 
+                        safe = False, 
+                        content_type = 'application/json', 
+                        status = 201
+                        )
                 except DatabaseError:
                     return HttpResponse(DatabaseErrorMessage, status=400)
+                except KeyError:
+                    return HttpResponse(KeyErrorMessage, status = 400)
+                except Exception:
+                    return HttpResponse(ExceptionMessage, status = 400)
         else:
             return HttpResponse("AuthorizationError", status=401)
 
     elif request.method == 'DELETE':
         if request.user.is_authenticated:
-            if len(Users.objects.all().values().filter(id= request.user.id, membership = "administrator")) == 0:
-                return HttpResponse("Unauthorized", status=403)
             try:
+                if len(Users.objects.all().values().filter(
+                    id= request.user.id, 
+                    membership = "administrator"
+                    )) == 0:
+                    return HttpResponse("Unauthorized", status=403)
+            
                 Offers.objects.filter(id= offerId).delete()
                 return HttpResponse("The offer has been deleted.")
             except DatabaseError:
                 return HttpResponse(DatabaseErrorMessage, status=400)
+            
+            except Exception:
+                return HttpResponse(ExceptionMessage, status = 400)
         else:
             return HttpResponse(AuthorizationError, status=401)
 

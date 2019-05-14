@@ -99,7 +99,9 @@ class Offers(models.Model):
 class Transactions(models.Model):
     user = models.ForeignKey(Users, on_delete = models.CASCADE)
     ticket = models.ForeignKey(Tickets, on_delete = models.CASCADE)
-    quantity = models.PositiveSmallIntegerField(validators=[MinValueValidator(1), MaxValueValidator(200)], null = False)
+    quantity = models.PositiveSmallIntegerField(
+        validators=[MinValueValidator(1), 
+        MaxValueValidator(200)], null = False)
     offer = models.ForeignKey(Offers, on_delete = models.CASCADE, null=True)
     total_price = models.DecimalField(max_digits=6, decimal_places=2, null=False)
     date = models.DateTimeField(auto_now_add= True)
