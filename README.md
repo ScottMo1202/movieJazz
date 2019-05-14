@@ -1,4 +1,5 @@
 # movieJazz
+![](./database-schema.png)
 
 We created an admin account automatically as the server starts, some requests are restricted only to admins. This will be mentioned in the later as well.  <br />
 admin username: admin<br />
