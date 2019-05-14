@@ -61,7 +61,7 @@ def theaters(request):
         except DatabaseError:
             return HttpResponse(DatabaseErrorMessage, status = 400)
         else:
-            return JsonResponse(theater_list, safe = False, content_type = 'application/json')
+            return render(request, '../templates/main/theaters.html', {'theaters': theater_list} ,status = 200)
     elif request.method == 'POST':
         if not request.user.is_authenticated:
              return HttpResponse(AuthorizationError, status = 401)
@@ -161,7 +161,7 @@ def tickets(request, theater_id):
         except DatabaseError:
             return HttpResponse(DatabaseError, status = 400)
         else:
-            return JsonResponse(all_tickets, safe = False, content_type = 'application/json', status = 201)
+            return JsonResponse(all_tickets, safe = False, content_type = 'application/json', status = 200)
     
     elif request.method == 'POST':
         if not current_user.is_authenticated:
@@ -307,7 +307,8 @@ def movies(request):
     if request.method == 'GET':
         try:
             moviesList = list(Movies.objects.all().values()) 
-            return JsonResponse(moviesList, safe = False,  content_type = 'application/json')
+            # return JsonResponse(moviesList, safe = False,  content_type = 'application/json')
+            return render(request, '../templates/main/movies.html', {'movieList': moviesList}, status = 200)
         except DatabaseError:
             return HttpResponse(DatabaseErrorMessage, status=400)
     
@@ -386,7 +387,7 @@ def users(request):
         if request.method == 'GET':
             try:
                 userList = list(Users.objects.all().values()) 
-                return JsonResponse(userList, safe = False,  content_type = 'application/json')
+                return render(request, '../templates/main/users.html', {'userList': userList}, status = 200)
             except DatabaseError:
                 return HttpResponse(DatabaseErrorMessage, status=400)
         else :
@@ -401,7 +402,7 @@ def offers(request):
     if request.method == 'GET':
         try:
             offersList = list(Offers.objects.all().values()) 
-            return JsonResponse(offersList, safe = False,  content_type = 'application/json')
+            return render(request, '../templates/main/offers.html', {'offersList': offersList}, status = 200)
         except DatabaseError:
             return HttpResponse(DatabaseErrorMessage, status=400)
     

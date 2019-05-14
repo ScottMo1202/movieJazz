@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<body>
+    <h1>Offers</h1>
+    {% block content %}
+    {% for offer in offersList %}
+        <h2>{{offer.offer_name}}</h2>
+        <ul>
+            <li>Description: {{offer.description}}</li>
+        </ul>
+    {% endfor %}
+    {% endblock %}
+</body>
+</html>
