@@ -61,7 +61,7 @@ def theaters(request):
         except DatabaseError:
             return HttpResponse(DatabaseErrorMessage, status = 400)
         else:
-            return JsonResponse(theater_list, safe = False, content_type = 'application/json')
+            return render(request, '../templates/main/theaters.html', {'theaters': theater_list} ,status = 200)
     elif request.method == 'POST':
         if not request.user.is_authenticated:
              return HttpResponse(AuthorizationError, status = 401)
