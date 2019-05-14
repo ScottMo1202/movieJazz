@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<body>
+    <h1>Users</h1>
+    {% block content %}
+    {% for user in userList %}
+        <h2>{{user.username}}</h2>
+        <ul>
+            <li>first name: {{user.first_name}}</li>
+            <li>last name: {{user.last_name}}</li>
+            <li>email: {{user.email}}</li>
+            <li>membership: {{user.membership}}</li>
+        </ul>
+    {% endfor %}
+    {% endblock %}
+</body>
+</html>
