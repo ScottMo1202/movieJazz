@@ -45,6 +45,10 @@ adminUser()
 def register(request):
     """This will register a new user according to the data
        provided in the form.
+
+       GET: shows user the register form that he will use to
+       fill out
+       POST: submit the registration application 
     """
     # This checks the HTTP methods.
     if request.method == 'GET':
@@ -85,6 +89,11 @@ def register(request):
 def signin(request):
     """This will check the user's authentification and 
        decides if he or she is legal to sign in.
+
+       'GET': shows users the sign in form that will 
+       be used to fill all authentificaiton data
+       'POST': sign in the user if the username and 
+       password are all correct
     """
     if request.method == 'GET':
         form = SigninForm()
@@ -114,6 +123,9 @@ def signin(request):
 @sensitive_post_parameters()
 def signout(request):
     """This lets user sign out if he has logged in.
+
+    'GET': tells the user whether he has logged out 
+    successfully.
     """
     if request.method == 'GET':
         # logs out a user if he has signed in
