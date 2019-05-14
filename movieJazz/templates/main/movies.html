@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<body>
+    <h1>Movies</h1>
+    {% block content %}
+    {% for movie in movieList %}
+        <h2>{{movie.name}}</h2>
+        <ul>
+            <li>description: {{movie.description}}</li>
+            <li>runtime: {{movie.runtime}}
+        </ul>
+    {% endfor %}
+    {% endblock %}
+</body>
+</html>
