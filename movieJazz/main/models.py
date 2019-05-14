@@ -40,7 +40,6 @@ class Tickets(models.Model):
     movie = models.ForeignKey(Movies, on_delete = models.CASCADE)
     time = models.DateTimeField(null = False)
     theater = models.ForeignKey(Theaters, on_delete = models.CASCADE)
-    user = models.ForeignKey(Users, on_delete = models.CASCADE)
     price = models.DecimalField(max_digits=5, decimal_places=2, null = False)
     
     REGULAR = 'RE'
@@ -101,16 +100,18 @@ class Transactions(models.Model):
     user = models.ForeignKey(Users, on_delete = models.CASCADE)
     ticket = models.ForeignKey(Tickets, on_delete = models.CASCADE)
     quantity = models.PositiveSmallIntegerField(validators=[MinValueValidator(1), MaxValueValidator(200)], null = False)
-    offer = models.ForeignKey(Offers, default=1, on_delete = models.CASCADE)
+    offer = models.ForeignKey(Offers, on_delete = models.CASCADE, null=True)
     total_price = models.DecimalField(max_digits=6, decimal_places=2, null=False)
     date = models.DateTimeField(auto_now_add= True)
 
     def save(self, *args, **kwargs):
+        if self.offer is None:
+            self.offer = Offers.objects.filter(name="No Offer").get()
         qty = float(self.quantity)
-        cost = float(Tickets.objects.get(id=self.ticket))
-        disc = 1.0 - float(Offers.objects.get(id=self.offer))
+        cost = float(Tickets.objects.get(id=self.ticket.id).price)
+        disc = 1.0 - float(Offers.objects.get(id=self.offer.id).offer_perc)
         tot_price = float(self.total_price)
-        if qty*cost*disc == tot_price :
+        if round(qty*cost*disc, 2) == tot_price :
             super().save(*args, **kwargs)
         else:
             return HttpResponse('Line Items Have Arithmatic Errors, Invalid Transaction', status = 400)

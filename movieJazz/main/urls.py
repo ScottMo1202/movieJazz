@@ -12,6 +12,6 @@ urlpatterns = [
     path('offers/<int:offerId>', views.specificOffer, name='specificOffer'),
     path('theaters', views.theaters, name = 'theaters'),
     path('theaters/<int:theater_id>', views.specificTheater, name = 'specificTheater'),
-    path('tickets', views.tickets, name = 'tickets'),
+    path('theaters/<int:theater_id>/tickets', views.tickets, name = 'tickets'),
     path('transactions', views.transactions, name = 'transactions')
 ]
