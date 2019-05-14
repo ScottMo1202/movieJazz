@@ -40,105 +40,204 @@ def jsonHandling(request):
 @sensitive_post_parameters()
 def theaters(request):
     if request.method == 'GET':
-        theaters_data = []
-        theaters_List = Theaters.objects.values()
-        for each_theater in theaters_List:
-            eachData = {}
-            eachData['name'] = each_theater['name']
-            eachData['street_number'] = each_theater['street_number']
-            eachData['street_name'] = each_theater['steet_name']
-            eachData['city'] = each_theater['city']
-            eachData['state'] = each_theater['state']
-            eachData['post_code'] = each_theater['post_code']
-        return JsonResponse(theaters_data, safe = False, content_type = 'application/json')
+        try:
+            theater_list = list(Theaters.objects.all().values())
+        except DatabaseError:
+            return HttpResponse(DatabaseErrorMessage, status = 400)
+        else:
+            return JsonResponse(theater_list, safe = False, content_type = 'application/json')
     elif request.method == 'POST':
         if not request.user.is_authenticated:
              return HttpResponse(AuthorizationError, status = 401)
         current_user = request.user
-        if current_user.membership.name != 'administrator' or current_user.membership.name != 'seller':
+        if current_user.membership != 'administrator' and current_user.membership != 'seller':
             return HttpResponse(AuthorizationError, status = 401)
         else:
             posted_data = jsonHandling(request)
             if posted_data == JSONDecodeFailMessage:
                 return HttpResponse(JSONDecodeFailMessage, status = 400)
             else:
-                new_theater = Theaters.objects.create(name = posted_data['name'], 
-                street_number = posted_data['street_number'], street_name = posted_data['street_name'], 
-                city = posted_data['city'], state = posted_data['state'], post_code = ['post_code'])
-                new_theater.save()
-                theater_id_list = Theaters.objects.values_list('id', flat = True)
-                this_theater_id = Theaters.objects.values_list('id', flat = True).get(id = len(theater_id_list))
-                this_theater_name = Theaters.objects.values_list('name', flat = True).get(id = len(theater_id_list))
-                this_theater_street_number = Theaters.objects.values_list('street_number', flat = True).get(id = len(theater_id_list))
-                this_theater_street_name = Theaters.objects.values_list('street_name', flat = True).get(id = len(theater_id_list))
-                this_theater_city = Theaters.objects.values_list('city', flat = True).get(id = len(theater_id_list))
-                this_theater_state = Theaters.objects.values_list('state', flat = True).get(id = len(theater_id_list))
-                this_theater_post_code = Theaters.objects.values_list('post_code', flat = True).get(id = len(theater_id_list))
-                new_theater_json = {'id': this_theater_id, 'name': this_theater_name, 
-                                   'street_number': this_theater_street_number, 
-                                   'street_name': this_theater_street_name,
-                                   'city': this_theater_city, 'state': this_theater_state,
-                                   'post_code': this_theater_post_code}
-                return JsonResponse(new_theater_json, safe = False, content_type = 'application/json', status = 201)
+                try:
+                    new_theater = Theaters.objects.create(name = posted_data['name'], 
+                    street_number = posted_data['street_number'], street_name = posted_data['street_name'], 
+                    city = posted_data['city'], state = posted_data['state'], post_code = posted_data['post_code'])
+                    new_theater.save()
+                    new_theater_info = Theaters.objects.all().values().filter(pk = new_theater.pk)[0]
+                except DatabaseError:
+                    return HttpResponse(DatabaseErrorMessage, status = 400)
+                except KeyError:
+                    return HttpResponse(KeyErrorMessage, status = 400)
+                else:
+                    return JsonResponse(new_theater_info, safe = False, content_type = 'application/json', status = 201)
     else:
         return HttpResponse(BadRequestMessage, status = 405)
 
 @csrf_exempt
 @sensitive_post_parameters()
-def specificTheater(requests, theater_id):
+def specificTheater(request, theater_id):
     if request.method == 'GET':
-        the_theater = Theaters.objects.filter(id = theater_id).get()
-        the_theater_data = {"name": the_theater.name, 'street_number': the_theater.street_number, 
-                           'street_name': the_theater.street_name, 'city': the_theater.city,
-                           'state': the_theater.state, 'post_code': the_theater.post_code}
-        return JsonResponse(the_theater_data, safe = False, content_type = 'application/json', status = 201)
+        try: 
+            the_theater = Theaters.objects.filter(id = theater_id).get()
+            the_theater_data = {"name": the_theater.name, 'street_number': the_theater.street_number, 
+                            'street_name': the_theater.street_name, 'city': the_theater.city,
+                            'state': the_theater.state, 'post_code': the_theater.post_code}
+        except DatabaseError:
+            return HttpResponse(DatabaseErrorMessage, status = 400)
+        else:
+            return JsonResponse(the_theater_data, safe = False, content_type = 'application/json', status = 201)
     elif request.method == 'PATCH':
         if not request.user.is_authenticated:
              return HttpResponse(AuthorizationError, status = 401)
         current_user = request.user
-        if current_user.membership != 'administrator' or current_user.membership.name != 'seller':
+        if current_user.membership != 'administrator' and current_user.membership.name != 'seller':
             return HttpResponse(AuthorizationError, status = 403)
         else:
             posted_data = jsonHandling(request)
             if posted_data == JSONDecodeFailMessage:
                 return HttpResponse(JSONDecodeFailMessage, status = 400)
             else:
-                the_theater = Theaters.objects.filter(id = theater_id).get()
-                changed_data = {}
-                if 'name' in posted_data:
-                    the_theater.name = posted_data['name']
-                    changed_data['name'] = posted_data['name']
-                if 'street_number' in posted_data:
-                    the_theater.street_number = posted_data['street_number']
-                    changed_data['street_number'] = posted_data['street_number']
-                if 'street_name' in posted_data:
-                    the_theater.street_name = posted_data['street_name']
-                    changed_data['street_name'] = posted_data['street_name']
-                if 'city' in posted_data:
-                    the_theater.city = posted_data['city']
-                    changed_data['city'] = posted_data['city']
-                if 'post_code' in posted_data:
-                    the_theater.post_code = posted_data['post_code']
-                    changed_data['post_code'] = posted_data['post_code']
-            the_theater.save()
-            return JsonResponse(changed_data, safe = False, content_type = 'application/json', status = 201)
+                try:
+                    the_theater = Theaters.objects.filter(id = theater_id).get()
+                    changed_data = {}
+                    if 'name' in posted_data:
+                        the_theater.name = posted_data['name']
+                        changed_data['name'] = posted_data['name']
+                    if 'street_number' in posted_data:
+                        the_theater.street_number = posted_data['street_number']
+                        changed_data['street_number'] = posted_data['street_number']
+                    if 'street_name' in posted_data:
+                        the_theater.street_name = posted_data['street_name']
+                        changed_data['street_name'] = posted_data['street_name']
+                    if 'city' in posted_data:
+                        the_theater.city = posted_data['city']
+                        changed_data['city'] = posted_data['city']
+                    if 'post_code' in posted_data:
+                        the_theater.post_code = posted_data['post_code']
+                        changed_data['post_code'] = posted_data['post_code']
+                    the_theater.save()
+                except KeyError:
+                    return HttpResponse(KeyErrorMessage, status = 400)
+                except DatabaseError:
+                    return HttpResponse(DatabaseError, status = 400)
+                else:
+                    return JsonResponse(changed_data, safe = False, content_type = 'application/json', status = 201)
     elif request.method == 'DELETE':
         if not request.user.is_authenticated:
              return HttpResponse(AuthorizationError, status = 401)
-        if current_user.membership != 'administrator' or current_user.membership.name != 'seller':
+        if request.user.membership != 'administrator' and request.user.membership.name != 'seller':
             return HttpResponse(AuthorizationError, status = 403)
-        the_theater.delete()
-        return HttpResponse('Deleted', status = 200)
+        try:
+            Theaters.objects.filter(id= theater_id).delete()
+        except DatabaseError:
+            return HttpResponse(DatabaseError, status = 400)
+        else:
+            return HttpResponse('Deleted', status = 200)
     else:
         return HttpResponse(BadRequestMessage, status = 405)
-'''
-def specificTicket(request):
+
+@csrf_exempt
+@sensitive_post_parameters()
+def tickets(request):
     if not request.user.is_authenticated:
         return HttpResponse(AuthorizationError, status = 401)
     else:
-        if request.method == "GET":
-'''
+        current_user = request.user
+        if current_user.membership == 'administrator':
+            if request.method == "GET":
+                try:
+                    all_tickets = list(Tickets.objects.filter(user = current_user.id).all().values())
+                except DatabaseError:
+                    return HttpResponse(DatabaseError, status = 400)
+                else:
+                    return JsonResponse(all_tickets, safe = False, content_type = 'application/json', status = 201)
+            elif request.method == 'POST':
+                if current_user.membership == 'administrator':
+                    posted_data = jsonHandling(request)
+                    if posted_data == JSONDecodeFailMessage:
+                        return HttpResponse(JSONDecodeFailMessage, status = 400)
+                    try:
+                        the_ticket_movie = Movies.objects.filter(id = int(posted_data['movie'])).get()
+                        the_ticket_theater = Theaters.objects.filter(id = int(posted_data['theater'])).get()
+                        the_ticket_user = Users.objects.filter(id = int(posted_data['user'])).get()
+                        the_ticket_time = posted_data['time']
+                        the_ticket_price = float(posted_data['price'])
+                        the_ticket_movie_type = posted_data['movie_type']
+                        new_ticket = Tickets.objects.create(movie = the_ticket_movie, time = the_ticket_time,
+                                    theater = the_ticket_theater, user = the_ticket_user, price = the_ticket_price,
+                                    movie_type = the_ticket_movie_type)
+                        new_ticket.save()
+                        ticketInfo = Tickets.objects.all().values().filter(pk = new_ticket.pk)[0]
+                    except DatabaseError:
+                        return HttpResponse(DatabaseError, status = 400)
+                    else:
+                        return JsonResponse(ticketInfo, safe = False, content_type = 'application/json', status = 201)
+                else:
+                    return HttpResponse(AuthorizationError, status = 403)
+            elif request.method == 'DELETE':
+                if current_user.membership == 'administrator':
+                    posted_data = jsonHandling(request)
+                    if posted_data == JSONDecodeFailMessage:
+                        return HttpResponse(JSONDecodeFailMessage, status = 400)
+                    try:
+                        Tickets.objects.filter(id = int(posted_data['id'])).delete()
+                    except DatabaseError:
+                        return HttpResponse(DatabaseError, status = 400)
+                    else:
+                        return HttpResponse('ticket deleted', status = 200)
+                else:
+                    return HttpResponse(AuthorizationError, status = 403)
+            else:
+                return HttpResponse(BadRequestMessage, status = 405)
+        else:
+            return HttpResponse(AuthorizationError, status = 403)
 
+@csrf_exempt
+@sensitive_post_parameters()
+def transactions(request):
+    if not request.user.is_authenticated:
+        return HttpResponse(AuthorizationError, status = 401)
+    else:
+        current_user = request.user
+        if current_user.membership != 'administrator':
+            return HttpResponse(AuthorizationError, status = 403)
+        else:
+            if request.method == 'GET':
+                try:
+                    transaction_list = list(Transactions.objects.all().values())
+                except DatabaseError:
+                    return HttpResponse(DatabaseError, status = 400)
+                else:
+                    return JsonResponse(transaction_list, safe = False, content_type = 'application/json')
+            elif request.method == 'POST':
+                posted_data = jsonHandling(request)
+                if posted_data == JSONDecodeFailMessage:
+                    return HttpResponse(JSONDecodeFailMessage, status = 400)
+                try:
+                    the_user = Users.objects.filter(id = int(posted_data['user'])).get()
+                    the_ticket = Tickets.objects.filter(id = int(posted_data['ticket'])).get()
+                    the_quantity = float(posted_data['quantity'])
+                    offer = Offers.objects.filter(id = int(posted_data['offer'])).get()
+                    the_total_price = the_quantity * float(the_ticket.price) * float(1 - offer.offer_perc)
+                    new_transaction = Transactions.objects.create(user = the_user, ticket = the_ticket,
+                                        quantity = the_quantity, offer = offer, total_price = the_total_price)
+                    transaction_info = Transactions.objects.all().values().filter(pk = new_transaction.pk)[0]
+                    new_transaction.save()
+                except DatabaseError:
+                    return HttpResponse(DatabaseError, status = 400)
+                except KeyError:
+                    return HttpResponse(DatabaseError, status = 400)
+                else:
+                    return JsonResponse(transaction_info, safe = False, content_type = 'application/json', status = 201)
+            elif request.method == 'DELETE':
+                try:
+                    Transactions.objects.filter(id = posted_data['id']).delete()
+                except DatabaseError:
+                    return HttpResponse(DatabaseError, status = 400)
+                else:
+                    return HttpResponse('Transaction Deleted', status = 200)
+            else:
+                return HttpResponse(BadRequestMessage, status = 405)
+                 
 @csrf_exempt
 @sensitive_post_parameters()
 def movies(request):
