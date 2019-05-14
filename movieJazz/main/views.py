@@ -213,14 +213,15 @@ def transactions(request):
                 if posted_data == JSONDecodeFailMessage:
                     return HttpResponse(JSONDecodeFailMessage, status = 400)
                 try:
-                    the_user = User.objects.filter(id = int(posted_data['user'])).get()
+                    the_user = Users.objects.filter(id = int(posted_data['user'])).get()
                     the_ticket = Tickets.objects.filter(id = int(posted_data['ticket'])).get()
                     the_quantity = int(posted_data['quantity'])
                     offer = Offers.objects.filter(id = int(posted_data['offer'])).get()
-                    the_total_price = float(posted_data['total_price'])
+                    the_total_price = the_quantity * the_ticket.price * (1 - offer.offer_perc)
                     new_transaction = Transactions.objects.create(user = the_user, ticket = the_ticket,
-                    quantity = the_quantity, offer = offer, total_price = the_total_price)
+                                        quantity = the_quantity, offer = offer, total_price = the_total_price)
                     transaction_info = Transactions.objects.all().values().filter(pk = new_transaction.pk)[0]
+                    new_transaction.save()
                 except DatabaseError:
                     return HttpResponse(DatabaseError, status = 400)
                 except KeyError:
