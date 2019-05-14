@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<body>
+    <h1>Theaters</h1>
+    {% block content %}
+    {% for theater in theaters %}
+        <h2>{{theater.name}}</h2>
+        <ul>
+            <li>Address: {{theater.street_number}} {{theater.street_name}}, {{theater.city}} {{theater.state}}, {{theater.postal_code}}</li>
+            <li></li>
+        </ul>
+    {% endfor %}
+    {% endblock %}
+</body>
+</html>
