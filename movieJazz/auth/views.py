@@ -5,10 +5,42 @@ from django.http import HttpResponseRedirect
 from django.contrib.auth import authenticate, login, logout
 from main.models import Users
 from django.views.decorators.debug import sensitive_post_parameters
+from django.views.decorators.csrf import csrf_exempt
+from django.db import DatabaseError
+import json
+
+
+JSONDecodeFailMessage = "Error decoding JSON body. Please ensure your JSON file is valid."
+BadRequestMessage = "Bad request."
+DatabaseErrorMessage = "Error interacting with database."
+KeyErrorMessage = "Erros when accessing the object"
+ExceptionMessage = "Some Exceptions Happened"
+AuthorizationError = "Not Authorized"
+
 # Create your views here.
 
-@sensitive_post_parameters('password', 'passwordconf', 'username', 'email', 
-                           'first_name', 'last_name')
+def adminUser():
+    """ This will create an admin user, which is specifically for internal use.
+    The user will only be created if it does not exist already. """
+
+    # Checking if general channel exists
+    if len(Users.objects.all().values().filter(membership="administrator", username="admin")) == 0:
+        
+        # Try to create admin user if it does not already exist
+        try:
+            user = Users.objects.create_user(username = "admin", password = "admin", first_name = "Admin")
+            user.membership="administrator"
+            user.last_name = 'Account'
+            user.email = 'admin@email.com'
+            user.save()
+        
+        except DatabaseError:
+            return HttpResponse(DatabaseErrorMessage, status=400)
+
+adminUser()
+
+@csrf_exempt
+@sensitive_post_parameters()
 def register(request):
     if request.method == 'GET':
         form = ReigistrationForm()
@@ -35,7 +67,8 @@ def register(request):
     else:
         return HttpResponse("Method not allowed", status = 405)
 
-@sensitive_post_parameters('username', 'password')
+@csrf_exempt
+@sensitive_post_parameters()
 def signin(request):
     if request.method == 'GET':
         form = SigninForm()
@@ -59,6 +92,8 @@ def signin(request):
     else:
         return HttpResponse("Method not allowed on /auth/signin.", status = 405)
 
+@csrf_exempt
+@sensitive_post_parameters()
 def signout(request):
     if request.method == 'GET':
         if request.user.is_authenticated:

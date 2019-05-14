@@ -15,6 +15,22 @@ KeyErrorMessage = "Erros when accessing the object"
 ExceptionMessage = "Some Exceptions Happened"
 AuthorizationError = "Not Authorized"
 
+def defaultOffer():
+    """ This will create an offer with 0% off, which is specifically for no offer used.
+    The offer will only be created if it does not exist already. """
+
+    # Checking if general channel exists
+    if len(Offers.objects.all().values().filter(offer_name="No Offer", offer_perc=.00, description = "No Offer")) == 0:
+        
+        # Try to create admin user if it does not already exist
+        try:
+            offer = Offers.objects.create(offer_name = "No Offer", offer_perc =.00 , description = "No Offer")
+            offer.save()
+        
+        except DatabaseError:
+            return HttpResponse(DatabaseErrorMessage, status=400)
+defaultOffer()
+
 @csrf_exempt
 @sensitive_post_parameters()
 def home(request):
@@ -137,98 +153,143 @@ def specificTheater(request, theater_id):
 
 @csrf_exempt
 @sensitive_post_parameters()
-def tickets(request):
-    if not request.user.is_authenticated:
-        return HttpResponse(AuthorizationError, status = 401)
-    else:
-        current_user = request.user
+def tickets(request, theater_id):
+    current_user = request.user
+    if request.method == "GET":
+        try:
+            all_tickets = list(Tickets.objects.filter(theater = theater_id).all().values())
+        except DatabaseError:
+            return HttpResponse(DatabaseError, status = 400)
+        else:
+            return JsonResponse(all_tickets, safe = False, content_type = 'application/json', status = 201)
+    
+    elif request.method == 'POST':
+        if not current_user.is_authenticated:
+            return HttpResponse(AuthorizationError, status = 401)
+        
         if current_user.membership == 'administrator':
-            if request.method == "GET":
-                try:
-                    all_tickets = list(Tickets.objects.filter(user = current_user.id).all().values())
-                except DatabaseError:
-                    return HttpResponse(DatabaseError, status = 400)
-                else:
-                    return JsonResponse(all_tickets, safe = False, content_type = 'application/json', status = 201)
-            elif request.method == 'POST':
-                if current_user.membership == 'administrator':
-                    posted_data = jsonHandling(request)
-                    if posted_data == JSONDecodeFailMessage:
-                        return HttpResponse(JSONDecodeFailMessage, status = 400)
-                    try:
-                        the_ticket_movie = Movies.objects.filter(id = int(posted_data['movie'])).get()
-                        the_ticket_theater = Theaters.objects.filter(id = int(posted_data['theater'])).get()
-                        the_ticket_user = Users.objects.filter(id = int(posted_data['user'])).get()
-                        the_ticket_time = posted_data['time']
-                        the_ticket_price = float(posted_data['price'])
-                        the_ticket_movie_type = posted_data['movie_type']
-                        new_ticket = Tickets.objects.create(movie = the_ticket_movie, time = the_ticket_time,
-                                    theater = the_ticket_theater, user = the_ticket_user, price = the_ticket_price,
-                                    movie_type = the_ticket_movie_type)
-                        new_ticket.save()
-                        ticketInfo = Tickets.objects.all().values().filter(pk = new_ticket.pk)[0]
-                    except DatabaseError:
-                        return HttpResponse(DatabaseError, status = 400)
-                    else:
-                        return JsonResponse(ticketInfo, safe = False, content_type = 'application/json', status = 201)
-                else:
-                    return HttpResponse(AuthorizationError, status = 403)
-            elif request.method == 'DELETE':
-                if current_user.membership == 'administrator':
-                    posted_data = jsonHandling(request)
-                    if posted_data == JSONDecodeFailMessage:
-                        return HttpResponse(JSONDecodeFailMessage, status = 400)
-                    try:
-                        Tickets.objects.filter(id = int(posted_data['id'])).delete()
-                    except DatabaseError:
-                        return HttpResponse(DatabaseError, status = 400)
-                    else:
-                        return HttpResponse('ticket deleted', status = 200)
-                else:
-                    return HttpResponse(AuthorizationError, status = 403)
+            posted_data = jsonHandling(request)
+            if posted_data == JSONDecodeFailMessage:
+                return HttpResponse(JSONDecodeFailMessage, status = 400)
+            try:
+                the_ticket_movie = Movies.objects.filter(id = posted_data['movie']).get()
+                the_ticket_theater = Theaters.objects.filter(id = theater_id).get()
+                the_ticket_time = posted_data['time']
+                the_ticket_price = posted_data['price']
+                the_ticket_movie_type = posted_data['movie_type']
+                new_ticket = Tickets.objects.create(movie = the_ticket_movie, time = the_ticket_time,
+                            theater = the_ticket_theater, price = the_ticket_price,
+                            movie_type = the_ticket_movie_type)
+                new_ticket.save()
+                ticketInfo = Tickets.objects.all().values().filter(pk = new_ticket.pk)[0]
+            except DatabaseError:
+                return HttpResponse(DatabaseError, status = 400)
             else:
-                return HttpResponse(BadRequestMessage, status = 405)
+                return JsonResponse(ticketInfo, safe = False, content_type = 'application/json', status = 201)
         else:
             return HttpResponse(AuthorizationError, status = 403)
+    
+    elif request.method == 'DELETE':
+        if not current_user.is_authenticated:
+            return HttpResponse(AuthorizationError, status = 401)
+        if current_user.membership == 'administrator':
+            posted_data = jsonHandling(request)
+            if posted_data == JSONDecodeFailMessage:
+                return HttpResponse(JSONDecodeFailMessage, status = 400)
+            try:
+                toBeDeleted = Tickets.objects.filter(id = posted_data['id'], theater= theater_id)
+                if toBeDeleted is None:
+                    return HttpResponse('Ticket not available in Theater.', status = 200)
+                toBeDeleted.delete()
+            except DatabaseError:
+                return HttpResponse(DatabaseError, status = 400)
+            else:
+                return HttpResponse('Ticket Deleted', status = 200)
+        else:
+            return HttpResponse(AuthorizationError, status = 403)
+    else:
+        return HttpResponse(BadRequestMessage, status = 405)
+
 
 @csrf_exempt
 @sensitive_post_parameters()
 def transactions(request):
-    if not request.user.is_authenticated:
+    current_user = request.user
+    if not current_user.is_authenticated:
         return HttpResponse(AuthorizationError, status = 401)
     else:
-        current_user = request.user
-        if current_user.membership != 'administrator':
-            return HttpResponse(AuthorizationError, status = 403)
-        else:
-            if request.method == 'GET':
-                try:
-                    transaction_list = list(Transactions.objects.all().values())
-                except DatabaseError:
-                    return HttpResponse(DatabaseError, status = 400)
-                else:
-                    return JsonResponse(transaction_list, safe = False, content_type = 'application/json')
-            elif request.method == 'POST':
+        if request.method == 'GET':
+            try:
+                transaction_list = list(Transactions.objects.all().values().filter(user= request.user.id))
+                returnList = []
+                for tran in transaction_list:
+                    curTran = {}
+                    curTran['movie'] = tran.ticket.movie.name
+                    curTran['quantity'] = tran.quantity
+                    curTran['total_price'] = tran.total_price
+                    curTran['date'] = tran.date
+                    returnList.append(curTran)
+                return JsonResponse(returnList, safe = False, content_type = 'application/json')
+            except DatabaseError:
+                return HttpResponse(DatabaseError, status = 400)
+                
+        
+        elif request.method == 'POST':
+            if current_user.membership == 'administrator':
                 posted_data = jsonHandling(request)
                 if posted_data == JSONDecodeFailMessage:
                     return HttpResponse(JSONDecodeFailMessage, status = 400)
                 try:
-                    the_user = Users.objects.filter(id = int(posted_data['user'])).get()
-                    the_ticket = Tickets.objects.filter(id = int(posted_data['ticket'])).get()
-                    the_quantity = float(posted_data['quantity'])
-                    offer = Offers.objects.filter(id = int(posted_data['offer'])).get()
-                    the_total_price = the_quantity * float(the_ticket.price) * float(1 - offer.offer_perc)
+                    the_user = Users.objects.filter(id = posted_data['user']).get()
+                    the_ticket = Tickets.objects.filter(id = posted_data['ticket']).get()
+                    the_quantity = posted_data['quantity']
+                    offer = Offers.objects.filter(id = posted_data['offer']).get()
+                    the_total_price = float(the_quantity) * float(the_ticket.price) * float(1 - offer.offer_perc)
+                    the_total_price = round(the_total_price, 2)
                     new_transaction = Transactions.objects.create(user = the_user, ticket = the_ticket,
                                         quantity = the_quantity, offer = offer, total_price = the_total_price)
-                    transaction_info = Transactions.objects.all().values().filter(pk = new_transaction.pk)[0]
                     new_transaction.save()
+                    transaction_info = Transactions.objects.all().values().filter(pk = new_transaction.pk)[0]
+                    
                 except DatabaseError:
                     return HttpResponse(DatabaseError, status = 400)
                 except KeyError:
                     return HttpResponse(DatabaseError, status = 400)
                 else:
                     return JsonResponse(transaction_info, safe = False, content_type = 'application/json', status = 201)
-            elif request.method == 'DELETE':
+            else:
+                return HttpResponse(AuthorizationError, status = 403)
+        
+        elif request.method == 'PATCH':
+            if current_user.membership == 'administrator':
+                posted_data = jsonHandling(request)
+                if posted_data == JSONDecodeFailMessage:
+                    return HttpResponse(JSONDecodeFailMessage, status = 400)
+                if 'id' in posted_data:
+                    curTran = Transactions.objects.filter(id=posted_data['id'])
+                    if 'quantity' in posted_data:
+                        curTran.update(quantity= posted_data['quantity'])
+                    if 'offer' in posted_data:
+                        newDisc = Offers.objects.get(id=posted_data['offer'])
+                        curTran.update(offer= newDisc)
+                    
+                    the_total_price = float(curTran.get().quantity) * float(curTran.get().ticket.price) * float(1 - curTran.get().offer.offer_perc)
+                    the_total_price = round(the_total_price, 2)
+                    curTran.update(total_price= the_total_price)
+
+                    tranInfo = Transactions.objects.all().values().filter(id= posted_data['id'])[0]
+                    return JsonResponse(tranInfo, safe = False, content_type = 'application/json', status = 201)
+
+                else:
+                    return HttpResponse(BadRequestMessage, status = 405)
+            else:
+                return HttpResponse(AuthorizationError, status = 403)
+        
+        elif request.method == 'DELETE':
+            if current_user.membership == 'administrator':
+                posted_data = jsonHandling(request)
+                if posted_data == JSONDecodeFailMessage:
+                    return HttpResponse(JSONDecodeFailMessage, status = 400)
                 try:
                     Transactions.objects.filter(id = posted_data['id']).delete()
                 except DatabaseError:
@@ -236,8 +297,10 @@ def transactions(request):
                 else:
                     return HttpResponse('Transaction Deleted', status = 200)
             else:
-                return HttpResponse(BadRequestMessage, status = 405)
-                 
+                return HttpResponse(AuthorizationError, status = 403)    
+        else:
+            return HttpResponse(BadRequestMessage, status = 405)
+                
 @csrf_exempt
 @sensitive_post_parameters()
 def movies(request):
@@ -406,7 +469,7 @@ def specificOffer(request, offerId):
             except DatabaseError:
                 return HttpResponse(DatabaseErrorMessage, status=400)
         else:
-            return HttpResponse("AuthorizationError", status=401)
+            return HttpResponse(AuthorizationError, status=401)
 
     else :
         return HttpResponse("Method not allowed on /offers/.", status = 405)
