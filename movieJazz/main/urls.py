@@ -9,5 +9,9 @@ urlpatterns = [
     path('users', views.users, name = 'users'),
     path('movies/<int:movieId>', views.specificMovie, name='specificMovie'),
     path('offers', views.offers, name = 'offers'),
-    path('offers/<int:offerId>', views.specificOffer, name='specificOffer')
+    path('offers/<int:offerId>', views.specificOffer, name='specificOffer'),
+    path('theaters', views.theaters, name = 'theaters'),
+    path('theaters/<int:theater_id>', views.specificTheater, name = 'specificTheater'),
+    path('tickets', views.tickets, name = 'tickets'),
+    path('transactions', views.transactions, name = 'transactions')
 ]
