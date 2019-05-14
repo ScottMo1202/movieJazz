@@ -215,9 +215,9 @@ def transactions(request):
                 try:
                     the_user = Users.objects.filter(id = int(posted_data['user'])).get()
                     the_ticket = Tickets.objects.filter(id = int(posted_data['ticket'])).get()
-                    the_quantity = int(posted_data['quantity'])
+                    the_quantity = float(posted_data['quantity'])
                     offer = Offers.objects.filter(id = int(posted_data['offer'])).get()
-                    the_total_price = the_quantity * the_ticket.price * (1 - offer.offer_perc)
+                    the_total_price = the_quantity * float(the_ticket.price) * float(1 - offer.offer_perc)
                     new_transaction = Transactions.objects.create(user = the_user, ticket = the_ticket,
                                         quantity = the_quantity, offer = offer, total_price = the_total_price)
                     transaction_info = Transactions.objects.all().values().filter(pk = new_transaction.pk)[0]
