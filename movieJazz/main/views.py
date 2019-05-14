@@ -402,7 +402,7 @@ def offers(request):
     if request.method == 'GET':
         try:
             offersList = list(Offers.objects.all().values()) 
-            return JsonResponse(offersList, safe = False,  content_type = 'application/json')
+            return render(request, '../templates/main/offers.html', {'offersList': offersList}, status = 200)
         except DatabaseError:
             return HttpResponse(DatabaseErrorMessage, status=400)
     
