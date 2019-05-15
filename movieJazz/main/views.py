@@ -542,6 +542,7 @@ def specificMovie(request, movieId):
     website."""
     if request.method == 'GET':
         try:
+            # gets specific movies based off of url parameter
             specMovie = Movies.objects.all().values().filter(pk = movieId)[0]
             return JsonResponse(specMovie, safe = False,  content_type = 'application/json')
         
@@ -552,6 +553,8 @@ def specificMovie(request, movieId):
 
     elif request.method == 'PATCH':
         if request.user.is_authenticated:
+
+            # checks to see if user is admin or not
             if len(Users.objects.all().values().filter(
                 id= request.user.id, 
                 membership = "administrator"
@@ -562,9 +565,13 @@ def specificMovie(request, movieId):
                 return HttpResponse(JSONDecodeFailMessage, status = 400)
             else:
                 try:
+                    # if description is in the JSON body, then update description 
+                    # for the specific movie.
                     if 'description' in posted_data:
                         Movies.objects.filter(id= movieId).update(description= posted_data['description'])
                     movieInfo = Movies.objects.all().values().filter(id= movieId)[0]
+                    
+                    #returns the updated information of specific movie 
                     return JsonResponse(
                         movieInfo, 
                         safe = False, 
@@ -588,7 +595,8 @@ def specificMovie(request, movieId):
                     membership = "administrator"
                     )) == 0:
                     return HttpResponse("Unauthorized", status=403)
-            
+
+                # deletes specific movie from the data base
                 Movies.objects.filter(id= movieId).delete()
                 return HttpResponse("The movie has been deleted.")
             except DatabaseError:
@@ -609,6 +617,7 @@ def users(request):
     When a GET request is made, all users and their information are displayed. """
     if request.user.is_authenticated:
         try:
+            # check to see if user is admin or not
             if len(Users.objects.all().values().filter(
                 id= request.user.id, 
                 membership = "administrator"
@@ -621,8 +630,10 @@ def users(request):
         
         if request.method == 'GET':
             try:
+                # gets a list of all current users
                 userList = list(Users.objects.all().values()) 
                 return render(
+                    # displays list as on formated template
                     request, 
                     '../templates/main/users.html', 
                     {'userList': userList}, 
@@ -649,7 +660,10 @@ def offers(request):
     discount, and description."""
     if request.method == 'GET':
         try:
+            # Getting list of all offers
             offersList = list(Offers.objects.all().values()) 
+
+            # Displaying list as formatted template
             return render(
                 request, 
                 '../templates/main/offers.html', 
@@ -674,6 +688,7 @@ def offers(request):
                 return HttpResponse(JSONDecodeFailMessage, status = 400)
             else:
                 try:
+                    # Adding and saving new offer into Offers table
                     newOffer = Offers.objects.create(
                         offer_name = posted_data['offer_name'], 
                         offer_perc = posted_data['offer_perc'], 
@@ -681,6 +696,7 @@ def offers(request):
                         )
                     newOffer.save()
                     offerInfo = Offers.objects.all().values().filter(pk=newOffer.pk)[0]
+                    # returns information of recently added offer
                     return JsonResponse(
                         offerInfo, 
                         safe = False, 
@@ -710,6 +726,7 @@ def specificOffer(request, offerId):
     website."""
     if request.method == 'GET':
         try:
+            # Gets the specific offer specified by url parameter
             specOffer = Offers.objects.all().values().filter(pk = offerId)[0]
             return JsonResponse(specOffer, safe = False,  content_type = 'application/json')
         
@@ -738,11 +755,15 @@ def specificOffer(request, offerId):
                 return HttpResponse(JSONDecodeFailMessage, status = 400)
             else:
                 try:
+                    # If description is in json body, update description, and if
+                    # offer_perc is in json body, update offer_perc of the specifeied
+                    # offer
                     if 'description' in posted_data:
                         Offers.objects.filter(id= offerId).update(description= posted_data['description'])
                     if 'offer_perc' in posted_data:
                         Offers.objects.filter(id= offerId).update(offer_perc= posted_data['offer_perc'])
 
+                    # returns updated info of offer
                     offerInfo = Offers.objects.all().values().filter(id= offerId)[0]
                     return JsonResponse(
                         offerInfo, 
@@ -767,7 +788,8 @@ def specificOffer(request, offerId):
                     membership = "administrator"
                     )) == 0:
                     return HttpResponse("Unauthorized", status=403)
-            
+
+                # Deletes the specified offer
                 Offers.objects.filter(id= offerId).delete()
                 return HttpResponse("The offer has been deleted.")
             except DatabaseError:
