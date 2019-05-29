@@ -17,7 +17,7 @@ ExceptionMessage = "Some Exceptions Happened"
 AuthorizationError = "Not Authorized"
 
 # Create your views here.
-
+@csrf_exempt
 def adminUser():
     """ This will create an admin user, which is specifically for internal use.
     The user will only be created if it does not exist already. """
@@ -37,8 +37,6 @@ def adminUser():
         
         except DatabaseError:
             return HttpResponse(DatabaseErrorMessage, status=400)
-
-adminUser()
 
 @csrf_exempt
 @sensitive_post_parameters()

@@ -52,7 +52,6 @@ def home(request):
     else:
         return HttpResponse("Method not allowed on /.", status = 405)
 
-@csrf_exempt
 @sensitive_post_parameters()
 def jsonHandling(request):
     """ This function's main purpose is to manage error handling for 
@@ -66,7 +65,6 @@ def jsonHandling(request):
         return ExceptionMessage
     else:
         return data
-
 
 @csrf_exempt
 @sensitive_post_parameters()
@@ -327,7 +325,6 @@ def tickets(request, theater_id):
             return HttpResponse(AuthorizationError, status = 403)
     else:
         return HttpResponse(BadRequestMessage, status = 405)
-
 
 @csrf_exempt
 @sensitive_post_parameters()
@@ -647,7 +644,6 @@ def users(request):
             return HttpResponse("Method not allowed on /users.", status = 405)
     else:
         return HttpResponse(AuthorizationError, status=401)
-
 
 @csrf_exempt
 @sensitive_post_parameters()
