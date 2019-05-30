@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8"/>
+        <title>Contact Us</title>
+    </head>
+    <body>
+        <div>
+            <h1 style="white-space:pre-wrap">Contact Us</h1>
+            <p style="white-space:pre-wrap">Feel free to contact us at krishna@uw.edu</p>
+            <h3 style="white-space:pre-wrap">Get in touch with us!</h3>
+            <h3><a href="questions">FAQs</a></h3>
+            <br />
+        </div>
+
+        {% block content %}
+            <form method = 'POST'>
+                {{form | linebreaks}}
+                <input type="submit" value="Submit">
+            </form>
+        {% endblock%}
+    </body>
+</html>
