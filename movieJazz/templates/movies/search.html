@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<htm>
+    <head>
+        <meta charset="utf-8"/>
+        <title>Search Movie</title>
+    </head>
+    <body>
+        {% block content %}
+            <form action = 'search' method = 'POST'>
+                {% csrf_token %}
+                {{ form | linebreaks}}
+                <input type="submit" value="Submit">
+            </form>
+        {% endblock %}
+    </body>
+</htm>
