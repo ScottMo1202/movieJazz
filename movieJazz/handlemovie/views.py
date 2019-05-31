@@ -178,12 +178,17 @@ def search(request):
       if not form.is_valid():
           return HttpResponse("Invalid registration request.", status = 400)
       else:
-          query = str(form.cleaned_data['input'])
-          the_result = list(Movies.objects.filter(name__icontains = query).all().values())
-          if (len(the_result) == 0):
-              return HttpResponse('No movie matches', status = 200)
-          else:
-              return render(request, '../templates/movies/searchResult.html', {'movieList': the_result}, status = 200)
+          try:
+            query = str(form.cleaned_data['input'])
+            the_result = list(Movies.objects.filter(name__icontains = query).all().values())
+            if (len(the_result) == 0):
+                return HttpResponse('No movie matches', status = 200)
+            else:
+                return render(request, '../templates/movies/searchResult.html', {'movieList': the_result}, status = 200)
+          except DatabaseError:
+                return HttpResponse(DatabaseErrorMessage, status=400)
+          except Exception:
+                return HttpResponse(ExceptionMessage, status = 400)
   else:
       return HttpResponse("Method not allowed", status = 405)
 
@@ -200,16 +205,22 @@ def review(request, movie_id):
             if not form.is_valid():
                 return HttpResponse("Invalid registration request.", status = 400)
             else:
-                rating = form.cleaned_data['rating']
-                text = form.cleaned_data['text']
-                the_movie = Movies.objects.filter(id = movie_id).get()
-                new_review = Reviews.objects.create(
-                    body = text, 
-                    movie = the_movie, 
-                    rating = rating,
-                    user = request.user
-                )
-                new_review.save()
-                return HttpResponse('Thanks for rating!', status = 201)
+                try:
+                    rating = form.cleaned_data['rating']
+                    text = form.cleaned_data['text']
+                    the_movie = Movies.objects.filter(id = movie_id).get()
+                    new_review = Reviews.objects.create(
+                        body = text, 
+                        movie = the_movie, 
+                        rating = rating,
+                        user = request.user
+                    )
+                    new_review.save()
+                except DatabaseError:
+                    return HttpResponse(DatabaseErrorMessage, status=400)
+                except Exception:
+                    return HttpResponse(ExceptionMessage, status = 400)
+                else:
+                    return HttpResponse('Thanks for rating!', status = 201)
     else:
         return HttpResponse("Method not allowed", status = 405)
