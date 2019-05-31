@@ -87,7 +87,6 @@ class Reviews(models.Model):
         choices=MOVIE_RATING_CHOICES,
         null = False
     )
-
     user = models.ForeignKey(Users, on_delete = models.CASCADE)
     date = models.DateTimeField(auto_now_add= True)
 

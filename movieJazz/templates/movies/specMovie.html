@@ -1,0 +1,28 @@
+<!DOCTYPE >
+<html>
+    <head>
+        <meta charset="utf-8"/>
+        <title>{{ movie.name }}</title>
+    </head>
+
+    <body>
+        {% block content %}
+        <h1>{{ movie.name }}</h1>
+        <p> runtime: {{ movie.runtime }}</p>
+        <p>Description: </p>
+        <p>{{ movie.description}} </p>
+        <br />
+        <br />
+
+        {% if reviewList %}
+            <h2>Reviews</h2>
+            <ul> 
+                {% for review in reviewList %}
+                <li> {{ review.body }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+        {% endblock %}
+
+    </body>
+</html>

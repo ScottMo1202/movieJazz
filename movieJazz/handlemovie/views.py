@@ -3,8 +3,8 @@ from django.shortcuts import render
 # Create your views here.
 from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
-from main.models import Movies, Users
-from .forms import SearchForm
+from main.models import Movies, Users, Reviews
+from .forms import SearchForm, ReviewForm
 from django.db import DatabaseError
 from django.template import loader, Context
 import json
@@ -106,14 +106,10 @@ def specificMovie(request, movieId):
     DELETE request is made specific movies can be deleted from the
     website."""
     if request.method == 'GET':
-        try:
             # gets specific movies based off of url parameter
             specMovie = Movies.objects.all().values().filter(pk = movieId)[0]
-            return JsonResponse(specMovie, safe = False,  content_type = 'application/json', status = 201)
-        except DatabaseError:
-            return HttpResponse(DatabaseErrorMessage, status=400)
-        except Exception:
-            return HttpResponse(ExceptionMessage, status = 400)
+            all_reviews = list(Reviews.objects.filter(movie__id = specMovie['id']).all().values())
+            return render(request, '../templates/movies/specMovie.html', {'movie': specMovie, 'reviewList': all_reviews}, status = 200)
     elif request.method == 'PATCH':
         if request.user.is_authenticated:
 
@@ -183,10 +179,37 @@ def search(request):
           return HttpResponse("Invalid registration request.", status = 400)
       else:
           query = str(form.cleaned_data['input'])
-          the_result = list(Movies.objects.filter(name = query).all().values())
+          the_result = list(Movies.objects.filter(name__icontains = query).all().values())
           if (len(the_result) == 0):
               return HttpResponse('No movie matches', status = 200)
           else:
               return render(request, '../templates/movies/searchResult.html', {'movieList': the_result}, status = 200)
   else:
       return HttpResponse("Method not allowed", status = 405)
+
+@csrf_exempt
+def review(request, movie_id):
+    if request.method == 'GET':
+        form = ReviewForm()
+        return render(request, '../templates/movies/review.html', {'form': form}, status = 200)
+    elif request.method == 'POST':
+        if not request.user.is_authenticated:
+            return HttpResponse("AuthorizationError", status=401)
+        else:
+            form = ReviewForm(request.POST)
+            if not form.is_valid():
+                return HttpResponse("Invalid registration request.", status = 400)
+            else:
+                rating = form.cleaned_data['rating']
+                text = form.cleaned_data['text']
+                the_movie = Movies.objects.filter(id = movie_id).get()
+                new_review = Reviews.objects.create(
+                    body = text, 
+                    movie = the_movie, 
+                    rating = rating,
+                    user = request.user
+                )
+                new_review.save()
+                return HttpResponse('Thanks for rating!', status = 201)
+    else:
+        return HttpResponse("Method not allowed", status = 405)

@@ -6,11 +6,12 @@
 
     {% block content %}
     {% for movie in movieList %}
-        <h2>{{movie.name}}</h2>
+        <h2><a href = '{{ movie.id }}'>{{movie.id}}. {{movie.name}}</a></h2>
         <ul>
             <li>description: {{movie.description}}</li>
             <li>runtime: {{movie.runtime}}
         </ul>
+        <p><a href = '{{ movie.id }}/review'>review it</a></p>
     {% endfor %}
     {% endblock %}
 </body>

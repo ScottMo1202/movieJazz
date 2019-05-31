@@ -1,0 +1,17 @@
+<!DOCTYPE >
+<html>
+    <head>
+        <meta charset="utf-8"/>
+        <title>{{ movie.name }} rate</title>
+    </head>
+
+    <body>
+        {% block content %}
+        <form action = 'review' method = 'POST'>
+            {% csrf_token %}
+            {{ form | linebreaks}}
+            <input type="submit" value="Rate">
+        </form>
+        {% endblock %}
+    </body>
+</html>
