@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8"/>
+        <title> Tickets </title>
+    </head>
+
+    <body>
+        {% block content %}
+            {% for ticket in ticketList %}
+                <ul>
+                    <li>{{ ticket.id }} ~</li>
+                        <ul>
+                            <li>Movie: {{ ticket.movie.name }}</li>
+                            <li>Time: {{ ticket.time }}</li>
+                            <li> Theater: {{ ticket.theater.name }}</li>
+                            <li>Movie_type: {{ ticket.movie_type }}</li>
+                            <li>Price: {{ ticket.price }}$</li>
+                            <li><a href = "theaters/{{ ticket.theater.id }}/tickets/{{ ticket.id }}/purchase/">But it</a></li>
+                        </ul>
+                </ul>
+            {% endfor %}
+        {% endblock %}
+    </body>
+</html>

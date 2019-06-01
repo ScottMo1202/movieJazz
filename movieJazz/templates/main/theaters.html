@@ -7,8 +7,9 @@
         <h2>{{theater.name}}</h2>
         <ul>
             <li>Street Address: {{theater.street_number}} {{theater.street_name}}</li>
-            <li>City: {{theater.city}}</li>
-            <li>State: {{theater.state}}</li>
+            <li>City: {{ theater.city }}</li>
+            <li>State: {{ theater.state }}</li>
+            <li><a href = 'theaters/{{ theater.id }}/tickets'>All tickets</a></li>
         </ul>
     {% endfor %}
     {% endblock %}

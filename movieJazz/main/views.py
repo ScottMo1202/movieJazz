@@ -245,19 +245,19 @@ def tickets(request, theater_id):
     if request.method == "GET":
         try:
             # get all tickets
-            all_tickets = list(Tickets.objects.filter(theater = theater_id).all().values())
+            all_tickets = Tickets.objects.filter(theater = theater_id).all()
         except DatabaseError:
             return HttpResponse(DatabaseError, status = 400)
         except Exception:
             return HttpResponse(ExceptionMessage, status = 400)
         else:
             # return all tickets data as a json object
-            return JsonResponse(
-                all_tickets, 
-                safe = False, 
-                content_type = 'application/json', 
+            return render(
+                request,
+                '../templates/main/tickets.html',
+                {'ticketList': all_tickets},
                 status = 200
-                )
+            )
     
     elif request.method == 'POST':
         if not current_user.is_authenticated:
@@ -270,6 +270,7 @@ def tickets(request, theater_id):
                 # try to create a new ticket
             try:
                 the_ticket_movie = Movies.objects.filter(id = posted_data['movie']).get()
+                print(the_ticket_movie.name)
                 the_ticket_theater = Theaters.objects.filter(id = theater_id).get()
                 the_ticket_time = posted_data['time']
                 the_ticket_price = posted_data['price']

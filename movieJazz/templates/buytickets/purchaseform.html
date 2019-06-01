@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8"/>
+        <title> Tickets </title>
+    </head>
+
+    <body>
+        {% block content %}
+            <form method = 'POST'>
+                {form | linebreaks}
+            </form>
+        {% endblock %}
+    </body>
+</html>
