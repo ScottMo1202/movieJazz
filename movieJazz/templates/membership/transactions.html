@@ -1,0 +1,22 @@
+<!DOCTYPE >
+<html>
+    <head>
+        <meta charset="utf-8"/>
+        <title>transactions</title>
+    </head>
+
+    <body>    
+        {% block content %}
+            {% for each in allTransactions %}
+            <ul>
+                <li>{{each.id}}. {{each.membership}}
+                    <ul>
+                        <li>Total Price: {{ each.total_price}}</li>
+                        <li>Time: {{ each.date }}</li>
+                    </ul>
+                </li>
+            </ul>
+            {% endfor %}
+        {% endblock %}
+    </body>
+</html>

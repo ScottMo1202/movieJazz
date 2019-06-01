@@ -39,7 +39,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'main.apps.MainConfig',
     'contactus.apps.ContactusConfig',
-    'handlemovie.apps.HandlemovieConfig'
+    'handlemovie.apps.HandlemovieConfig',
+    'membership.apps.MembershipConfig'
 ]
 
 MIDDLEWARE = [

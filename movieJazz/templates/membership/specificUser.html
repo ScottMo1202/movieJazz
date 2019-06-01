@@ -1,0 +1,20 @@
+<!DOCTYPE >
+<html>
+    <head>
+        <meta charset="utf-8"/>
+        <title>{{ user.username }}</title>
+    </head>
+
+    <body>
+        <h1> Hello {{ user.first_name }}!!!</h1>
+        <p>Below is your basic information!</p>
+        <ul>
+            <li>{{ user.id}}. {{user.username}}</li>
+            <li>Full Name: {{ user.first_name}} {{user.last_name}} </li>
+            <li>Email: {{ user.email }}</li>
+            <li>Membership: {{user.membership}}</li>
+            <li><a href='../user/transactions'>Transaction History</a></li>
+        </ul>
+        <h2><a href = "../user/memberships">Update your membership!</a></h2>
+    </body>
+</html>
