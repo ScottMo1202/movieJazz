@@ -1,16 +1,538 @@
-<!DOCTYPE html>
-<html>
+{%load static from staticfiles %}
+<!doctype html>
+<!--[if IE 9]> <html class="no-js ie9 fixed-layout" lang="en"> <![endif]-->
+<!--[if gt IE 9]><!--> <html class="no-js " lang="en"> <!--<![endif]-->
+<head>
+    <!-- Basic -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    
+    <!-- Mobile Meta -->
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    
+    <!-- Site Meta -->
+    <title>Movie Jazz</title>
+    <meta name="keywords" content="">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    
+    <!-- Site Icons -->
+    <link rel="shortcut icon" href="{% static 'favicon.ico' %}" type="image/x-icon" />
+    <link rel="apple-touch-icon" href="{% static 'apple-touch-icon.png' %}">
+
+	<!-- Google Fonts -->
+ 	<link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,600,700" rel="stylesheet"> 
+
+	<!-- Custom & Default Styles -->
+	<link rel="stylesheet" type="text/css" href="http://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.3.0/css/font-awesome.css">
+	<link rel="stylesheet" type="text/css" href="{% static 'bootstrap.min.css' %}">
+	<link rel="stylesheet" type="text/css" href="{% static 'animate.css' %}">
+	<link rel="stylesheet" type="text/css" href="{% static 'carousel.css' %}">
+	<link rel="stylesheet" type="text/css" href="{% static 'style.css' %}">
+
+	<!--[if lt IE 9]>
+		<script src="js/vendor/html5shiv.min.js"></script>
+		<script src="js/vendor/respond.min.js"></script>
+	<![endif]-->
+
+</head>
 <body>
-    <h1>Welcome to Movie Jazz</h1>
-    <a href="../auth/signin">signin</a><br />
-    <a href="../auth/register">register</a><br />
-    <a href="../auth/signout">signout</a><br />
-    <br />
-    <a href="../movies">movies</a><br />
-    <a href="../theaters">theaters</a><br />
-    <a href="../users">users</a><br />
-    <a href="../offers">offers</a><br />
-    <a href="../user">Your Profile</a><br />
-    <a href="../contact">Contact Us</a><br />
+	
+	<div id="wrapper">
+        <div class="topbar">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-6 col-sm-6 hidden-xs">
+                        <nav class="topbar-menu">
+                            <ul class="list-inline">
+                            	<li>Follow us: </li>
+								<li><a href="#"><i class="fa fa-facebook"></i></a></li>
+                                <li><a href="#"><i class="fa fa-twitter"></i></a></li>
+                                <li><a href="#"><i class="fa fa-linkedin"></i></a></li>
+                                <li><a href="#"><i class="fa fa-google-plus"></i></a></li>
+                            </ul><!-- end list -->
+                        </nav><!-- end menu -->
+                    </div><!-- end col -->
+
+                    <div class="col-md-6 col-sm-6">
+                        <nav class="topbar-menu">
+                            <ul class="list-inline text-right navbar-right">
+                                <li class="dropdown">
+                                    <a class="dropdown-toggle" data-toggle="dropdown" href="#"><img src="{% static 'us.png' %}" alt=""> English
+                                    <span class="fa fa-angle-down"></span></a>
+                                    <ul class="dropdown-menu">
+                                        <li><a href="#"><img src="{% static 'tr.png' %}" alt=""> Turkish</a></li>
+                                        <li><a href="#"><img src="{% static 'si.png' %}" alt=""> Spanish</a></li>
+                                        <li><a href="#"><img src="{% static 'it.png' %}" alt=""> Italian</a></li>
+                                        <li><a href="#"><img src="{% static 'ae.png' %}" alt=""> Arabic</a></li>
+                                        <li><a href="#"><img src="{% static 'de.png' %}" alt=""> German</a></li>
+                                    </ul>
+                                </li>
+                                <li class="hidden-xs"><i class="fa fa-clock-o"></i> 08:00 - 17:00</li>
+                                <li><i class="fa fa-phone"></i> +00 000 000 0000</li>
+                            </ul><!-- end list -->
+                        </nav><!-- end menu -->
+                    </div><!-- end col -->
+                </div><!-- end row -->
+            </div><!-- end container -->
+        </div><!-- end topbar -->
+
+		<header class="header site-header">
+			<div class="container">
+				<nav class="navbar navbar-default yamm">
+				    <div class="container-fluid">
+				        <div class="navbar-header">
+				            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+				                <span class="sr-only">Toggle navigation</span>
+				                <span class="icon-bar"></span>
+				                <span class="icon-bar"></span>
+				                <span class="icon-bar"></span>
+				            </button>
+							<a class="navbar-brand" href="/"><img src="{% static 'logo.png'%}" alt="Linda"></a>
+				        </div>
+				        <div id="navbar" class="navbar-collapse collapse">
+				            <ul class="nav navbar-nav navbar-right">
+				                <li class="active"><a href="/">Home</a></li>
+				                <li>
+				                    <a href="../movies">Movies </a>
+				                </li>
+				                <li><a href="../theaters">Theaters</a></li>
+				                <li><a href="../offers">Offers</a></li>
+								<li><a href="../contact">Contact Us</a></li>
+								{% if user.is_authenticated %}
+								{% if user.id == 1 %}
+								<li><a href="../users">Users</a></li>
+								{% endif %}
+								{% endif %}
+								<li></li>
+								{% if user.is_authenticated %}
+								<li><a href="../user">Profile</a></li>
+								<li><a href="../auth/signout">Sign Out</a></li>
+								<li class="lastlink hidden-xs hidden-sm"><a class="btn btn-primary" href="../user/memberships"><i class="fa fa-user-plus"></i>Upgrade</a></li>
+								{% else %}
+								<li><a href="../auth/signin">Sign In</a></li>
+								<li class="lastlink hidden-xs hidden-sm"><a class="btn btn-primary" href="../auth/register"><i class="fa fa-user-plus"></i>Register</a></li>
+								{% endif %}
+                            </ul>
+				        </div><!--/.nav-collapse -->
+				    </div><!--/.container-fluid -->
+				</nav><!-- end nav -->
+			</div><!-- end container -->
+		</header><!-- end header -->
+
+		<section class="section transheader homepage parallax" data-stellar-background-ratio="0.5" style="background-image:url('static/bg_01.jpg');">
+			<div class="container">
+				<div class="row">	
+					<div class="col-md-10 col-md-offset-1 col-sm-12 text-center">
+						<h2>Search The Latest Movies In Theaters</h2>
+						<p class="lead">Become a Member and Get Discounted Tickets!</p>
+						<form action="movies">
+							<div class="item-top form-inline">
+								<input type="submit" name="send" value="Explore" class="btn btn-default-blue" />
+							</div>
+						</form>
+					</div><!-- end col -->
+				</div><!-- end row -->
+			</div><!-- end container -->
+		</section><!-- end section -->
+
+		<section class="section nopad">
+			<div class="container-fluid">
+				<div class="row text-center">
+					<div class="col-md-3 col-sm-6 nopad first">
+						<div class="home-service c1">
+							<i class="flaticon-competition"></i>
+							<p>Critics: Rate/Review Movies for Offer Incentives</p>
+						</div><!-- end home-service -->
+					</div><!-- end col -->
+
+					<div class="col-md-3 col-sm-6 nopad">
+						<div class="home-service c2">
+							<i class="flaticon-chat"></i>
+							<p>Members: Recieve Discounted Tickets Monthly</p>
+						</div><!-- end home-service -->
+					</div><!-- end col -->
+
+					<div class="col-md-3 col-sm-6 nopad">
+						<div class="home-service c3">
+							<i class="flaticon-domain"></i>
+							<p>Anyone: Buy Tickets for Any Movie in Theaters</p>
+						</div><!-- end home-service -->
+					</div><!-- end col -->
+
+					<div class="col-md-3 col-sm-6 nopad last">
+						<div class="home-service c4">
+							<i class="flaticon-medal"></i>
+							<p>Theaters: Organization and Ticket Sales Online</p>
+						</div><!-- end home-service -->
+					</div><!-- end col -->
+				</div><!-- end row -->
+			</div><!-- end container -->
+		</section><!-- end section -->
+
+		<section class="section overfree">
+			<div class="icon-center"><i class="fa fa-film"></i></div>
+			<div class="container">
+				<div class="section-title text-center">
+					<small>Welcome to the Best Movie Tickets Marketplace</small>
+					<h3>Top Reasons to Choose Us</h3>
+					<hr>
+					<p class="lead"> We have the best prices and deals for movie tickets. We provide convenience and a seemless platform to go to the movies hassle-free.</p>
+				</div><!-- end section-title -->
+
+				<div class="row service-list text-center">
+					<div class="col-md-4 col-sm-12 col-xs-12 first">
+						<div class="service-wrapper wow fadeIn">	
+							<i class="fas fa-circle-notch"></i>
+							<div class="service-details">
+								<h4><a href="#" title="">What We Do</a></h4>
+								<p>We provide market value movie tickets to film enthusiests, critics, and casual movie watchers. Our online platform 
+									makes it super easy for our customers to be able to  buy tickets for the best seats, and potentially at discounted prices
+									with the Offers and Memberships we provide.
+								</p>
+								<a href="#" class="readmore">View Details</a>
+							</div>
+						</div><!-- end service-wrapper -->
+					</div><!-- end col -->
+
+					<div class="col-md-4 col-sm-12 col-xs-12">
+						<div class="service-wrapper wow fadeIn">	
+							<i class="fas fa-circle-notch"></i>
+							<div class="service-details">
+								<h4><a href="#" title="">Who We Are</a></h4>
+								<p>We are MovieJazz, a marketplace and review hub for the latest and older movies being show in theaters around the US. We are a
+									group of two college students who began this journey through our huge passion of watching movies as a hobby.
+								</p>
+								<a href="#" class="readmore">View Details</a>
+							</div>
+						</div><!-- end service-wrapper -->
+					</div><!-- end col -->
+
+					<div class="col-md-4 col-sm-12 col-xs-12 last">
+						<div class="service-wrapper wow fadeIn">	
+							<i class="fas fa-circle-notch"></i>
+							<div class="service-details">
+								<h4><a href="#" title="">Our Mission</a></h4>
+								<p>We hope to provide a seemless experience of buying, rating, reviewing, and experiencing movies for all movie enjoyers of all ages. 
+									We also wish to make movie going more accessable through the offers and memberships we provide.
+								</p>
+								<a href="#" class="readmore">View Details</a>
+							</div>
+						</div><!-- end service-wrapper -->
+					</div><!-- end col -->
+				</div><!-- end row -->
+
+				<hr class="invis2">
+
+				<div class="row">
+					<div class="col-md-6">
+                        <div class="milestone-counter c1">
+                            <img src="{% static 'icon_07.png' %}" alt="" class="alignleft">
+                            <h3 class="stat-count">98</h3>
+                            <p>Happy Customers</p>
+                        </div>
+                    </div>
+
+					<div class="col-md-6">
+                        <div class="milestone-counter c3">
+                            <img src="{% static 'icon_09.png' %}" alt="" class="alignleft">
+                            <h3 class="stat-count">2000</h3>
+                            <p>Tickets Sold</p>
+                        </div>
+                    </div>
+                </div>
+			</div><!-- end container -->
+		</section><!-- end section -->
+		
+		<section class="section lb nopad spotlight style1">
+		    <div class="image col-md-4 hidden-sm hidden-xs">
+		        <img src="{% static 'pre_1.jpg' %}" alt="" />
+		    </div>
+		    <div class="content">
+		        <h2>Find Theaters Near You</h2>
+		        <p>Buy tickets for the website itself for theaters near you for any movie currently playing. Either print out your reciept,
+					or hold onto online tickets with electronic device in order to redeem and watch the purchaced movie at the theater. As simple
+					that.</p>
+		         <a href="/theaters" class="btn btn-transparent">Learn More</a>
+		    </div>
+		</section>
+
+		<section class="section bt">
+			<div class="container">
+				<div class="section-title text-center">
+					<small>The newest and most exciting movies at your fingertips.</small>
+					<h3>Latest Movies</h3>
+				</div><!-- end section-title -->
+
+				<div class="owl-carousel owl-theme lightcasestudies withhover">
+					<div class="item-carousel">
+						<div class="case-box">
+							<img src="{% static 'case_01.png' %}" alt="" class="img-responsive">
+							<div class="magnifier">
+								<a href="/movies"><i class="fa fa-link"></i></a> 
+							</div>
+						</div><!-- end case-box -->
+					</div><!-- end col -->
+
+					<div class="item-carousel">
+						<div class="case-box">
+							<img src="{% static 'case_02.png' %}" alt="" class="img-responsive">
+							<div class="magnifier">
+								<a href="/movies"><i class="fa fa-link"></i></a> 
+							</div>
+						</div><!-- end case-box -->
+					</div><!-- end col -->
+
+					<div class="item-carousel">
+						<div class="case-box">
+							<img src="{% static 'case_03.png' %}" alt="" class="img-responsive">
+							<div class="magnifier">
+								<a href="/movies"><i class="fa fa-link"></i></a> 
+							</div>
+						</div><!-- end case-box -->
+					</div><!-- end col -->
+
+					<div class="item-carousel">
+						<div class="case-box">
+							<img src="{% static 'case_04.jpg' %}" alt="" class="img-responsive">
+							<div class="magnifier">
+								<a href="/movies"><i class="fa fa-link"></i></a> 
+							</div>
+						</div><!-- end case-box -->
+					</div><!-- end col -->
+
+					<div class="item-carousel">
+						<div class="case-box">
+							<img src="{% static 'case_05.jpg' %}" alt="" class="img-responsive">
+							<div class="magnifier">
+								<a href="/movies"><i class="fa fa-link"></i></a> 
+							</div>
+						</div><!-- end case-box -->
+					</div><!-- end col -->
+
+					<div class="item-carousel">
+						<div class="case-box">
+							<img src="{% static 'case_06.jpg' %}" alt="" class="img-responsive">
+							<div class="magnifier">
+								<a href="#"><i class="fa fa-link"></i></a> 
+							</div>
+						</div><!-- end case-box -->
+					</div><!-- end col -->
+				</div>
+		    </div>
+		</section>
+
+		<section class="section lb nopad spotlight style1">
+		    <div class="content">
+		        <h2>Plenty of Discounts and Offers Year Round</h2>
+		        <p>We provide all sorts of discounts and offers to our customers. We ussually have seasonal offers, and many
+					times we can work with theaters to provide discounts for tickets.
+				</p>
+		         <a href="/offers" class="btn btn-transparent">Learn More</a>
+		    </div>
+		    <div class="image col-md-4 hidden-sm hidden-xs">
+		        <img src="{% static 'pre_2.jpg' %}" alt="" />
+		    </div>
+		</section>
+
+		<section class="section overfree">
+			<div class="icon-center"><i class="fa fa-bar-chart"></i></div>
+			<div class="container">
+
+				<div class="center-pricing">
+			  		<div>
+			    		<div role="tabpanel" class="tab-pane active" id="home">
+							<div class="row big-pricing">
+								<div class="col-md-6 col-sm-6 col-xs-12 colon1 nopad">
+									<div class="pricing-header firstch c0">
+										<p>Check out the benefits of being a Member!</p>
+										<h4>Monthly Movie Ticket Account Plans</h4>
+									</div><!-- end pricing-header -->
+									<ul class="first-colon">
+										<li>Offers and Discounts 
+											<span>
+												<a href="#" data-toggle="tooltip" data-placement="left" title="Seasonal Offers to make ticket purchaces cheaper.">
+												<i class="fa fa-info"></i>
+												</a>
+											</span>
+										</li>
+										<li>Online Ticket Purchacing
+											<span>
+												<a href="#" data-toggle="tooltip" data-placement="left" title="Ability to buy tickets for a movie for theaters near you online.">
+												<i class="fa fa-info"></i>
+												</a>
+											</span>
+										</li>
+										<li>Print and Online Copy
+											<span>
+												<a href="#" data-toggle="tooltip" data-placement="left" title="Ability to print out ticket or have online ticket.">
+												<i class="fa fa-info"></i>
+												</a>
+											</span>
+										</li>
+										<li>Free Tickets
+											<span>
+												<a href="#" data-toggle="tooltip" data-placement="left" title="Free tickets are offered every month to members.">
+												<i class="fa fa-info"></i>
+												</a>
+											</span>
+										</li>
+										<li>Early Showing
+											<span>
+												<a href="#" data-toggle="tooltip" data-placement="left" title="Potential to see exclusive movies earlier at select theaters.">
+												<i class="fa fa-info"></i>
+												</a>
+											</span>
+										</li>
+
+									</ul>
+								</div><!-- end col -->
+								<div class="col-md-3 col-sm-6 col-xs-12 colon1 nopad text-center">
+									<div class="pricing-header firstch c1">
+										<p>Free</p>
+										<h4>Normal</h4>
+									</div><!-- end pricing-header -->
+									<ul>
+										
+										<li><i class="fa fa-check"></i></li>
+										<li><i class="fa fa-check"></i></li>
+										<li><i class="fa fa-check"></i></li>
+										<li>0</li>
+										<li><i class="fa fa-close"></i></li>
+
+
+									</ul>
+									{% if not user.is_authenticated %}
+									<div class="pricing-footer text-center">
+										<a href="auth/register" class="btn c1">REGISTER</a>
+									</div>
+									{% endif %}
+								</div><!-- end col -->
+								<div class="col-md-3 col-sm-6 col-xs-12 colon1 nopad text-center">
+									<div class="pricing-header firstch c2">
+										<p>$20/Month</p>
+										<h4>Member</h4>
+									</div><!-- end pricing-header -->
+									<ul>
+										<li><i class="fa fa-check"></i></li>
+										<li><i class="fa fa-check"></i></li>
+										<li><i class="fa fa-check"></i></li>
+										<li>3</li>
+										<li><i class="fa fa-check"></i></li>
+
+									</ul>
+									<div class="pricing-footer text-center">
+										{% if user.is_authenticated %}
+										<a href="user/memberships" class="btn c2">JOIN NOW</a>
+										{% else %}
+										<a href="auth/register" class="btn c2">JOIN NOW</a>
+										{% endif %}
+									</div>
+								</div><!-- end col -->
+							</div><!-- end big-pricing -->
+						</div><!-- end tab-pane -->
+				  	</div><!-- end tab-content -->
+				</div><!-- end center-pricing -->
+                <hr class="invis">
+
+				<div class="row callout bgcolor">
+					<div class="col-md-9">
+						<p class="lead">We've hundreds of happy customers, and we will make sure you have to the best experience possible as well!</p>
+					</div>
+					<div class="col-md-3">
+						<div class="button-wrap text-center">
+							<a href="#" class="btn btn-transparent btn-light btn-lg">Contact us</a>
+						</div>
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<footer class="footer primary-footer">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-3 col-sm-3">
+                    	<div class="widget clearfix">
+                    		<h4 class="widget-title">Company</h4>
+                    		<ul>
+                    			<li><a href="contact">Contact Us</a></li>
+                    			<li><a href="#">About Us</a></li>
+                    			<li><a href="#">Trademark</a></li>
+                    		</ul>
+                    	</div><!-- end widget -->
+                    </div><!-- end col -->
+
+                    <div class="col-md-3 col-sm-3">
+                    	<div class="widget clearfix">
+                    		<h4 class="widget-title">Services</h4>
+                    		<ul>
+                    			<li><a href="#">Movies</a></li>
+								<li><a href="#">Theaters</a></li>
+								{% if user.is_authenticated %}
+								<li><a href="auth/signout">Sign Out</a></li>
+								<li><a href="/user">Profile</a></li>
+                    			<li><a href="/user/memberships">Upgrade</a></li>
+								{% else %}
+								<li><a href="auth/signin">Sign In</a></li>
+                    			<li><a href="auth/register">Register</a></li>
+								{% endif %}
+                    			
+                    		</ul>
+                    	</div><!-- end widget -->
+                    </div><!-- end col -->
+
+                    <div class="col-md-3 col-sm-3">
+                    	<div class="widget clearfix">
+                    		<h4 class="widget-title">Download</h4>
+                    		<ul>
+                    			<li><a href="#">MAC/OSX</a></li>
+                    			<li><a href="#">Android</a></li>
+                    			<li><a href="#">Windows</a></li>
+                    			<li><a href="#">Google Play</a></li>
+                    			<li><a href="#">Amazon</a></li>
+                    		</ul>
+                    	</div><!-- end widget -->
+                    </div><!-- end col -->
+
+                    <div class="col-md-3 col-sm-3">
+                    	<div class="widget clearfix">
+                    		<h4 class="widget-title">Be Social</h4>
+                    		<ul>
+                    			<li><a href="#">Facebook</a></li>
+                    			<li><a href="#">Twitter</a></li>
+                    			<li><a href="#">Google+</a></li>
+                    			<li><a href="#">Linkedin</a></li>
+                    		</ul>
+                    	</div><!-- end widget -->
+                    </div><!-- end col -->
+                </div><!-- end row -->
+           	</div><!-- end container -->
+		</footer><!-- end primary-footer -->
+
+		<footer class="footer secondary-footer">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-6 col-sm-6 col-xs-12">
+                        <p>2019&copy;<a href="#">MovieJazz</a>   MovieJazz INC. All rights reserved.</p>
+                    </div>
+
+                    <div class="col-md-6 col-sm-6 col-xs-12">
+                        <ul class="list-inline">
+                            <li>Designed: <a href="https://html.design">HTML Design</a></li>
+                        </ul>
+                    </div><!-- end col -->
+                </div><!-- end row -->
+            </div><!-- end container -->
+		</footer><!-- end second footer -->
+	</div><!-- end wrapper -->
+
+	<!-- jQuery Files -->
+	<script src="{% static 'jquery.min.js' %}"></script>
+	<script src="{% static 'bootstrap.min.js' %}"></script>
+	<script src="{% static 'parallax.js' %}"></script>
+	<script src="{% static 'animate.js' %}"></script>
+	<script src="{% static 'owl.carousel.js' %}"></script>
+	<script src="{% static 'custom.js' %}"></script>
+
 </body>
 </html>

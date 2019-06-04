@@ -40,7 +40,8 @@ INSTALLED_APPS = [
     'main.apps.MainConfig',
     'contactus.apps.ContactusConfig',
     'handlemovie.apps.HandlemovieConfig',
-    'membership.apps.MembershipConfig'
+    'membership.apps.MembershipConfig',
+    "django_static_fontawesome"
 ]
 
 MIDDLEWARE = [
@@ -128,5 +129,15 @@ SESSION_COOKIE_AGE = 3600
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
 
 STATIC_URL = '/static/'
+
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'css'),
+    os.path.join(BASE_DIR, 'fonts'),
+    os.path.join(BASE_DIR, 'images'),
+    os.path.join(BASE_DIR, 'js'),
+    os.path.join(BASE_DIR, 'upload')
+]
 
 AUTH_USER_MODEL = 'main.Users'

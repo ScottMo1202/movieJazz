@@ -15,12 +15,41 @@ class QuestionForm(forms.Form):
         (TRANS, 'Transaction'),
         (OTHER, 'Others')
     )
-    first_name = forms.CharField(max_length = 50, required = True)
-    last_name = forms.CharField(max_length = 50, required = True)
-    email = forms.EmailField(required = True)
-    subject = forms.ChoiceField(label="Subject", choices = SUBJECT_CHOICE, required = True, widget=forms.RadioSelect())
-    body = forms.CharField(max_length = 1000, required = True)
+    first_name = forms.CharField(label = '', max_length = 50, 
+                widget=forms.TextInput(attrs={
+                    'class' : 'form-control',
+                    'placeholder': 'First Name'
+                    
+                    }), required = True)
+    last_name = forms.CharField(label='',max_length = 50, 
+                widget=forms.TextInput(attrs={
+                    'class' : 'form-control',
+                    'placeholder': 'Last Name'
+                    
+                    }), required = True)
+    email = forms.EmailField(label = '', 
+                widget=forms.TextInput(attrs={
+                    'class' : 'form-control',
+                    'placeholder': 'Email'
+                    
+                    }), required = True)
+    subject = forms.ChoiceField(label="", choices = SUBJECT_CHOICE, required = True, 
+                widget=forms.Select(attrs={
+                    'class' : 'form-control',
+                    'placeholder': 'Subject'
+                    
+                    }))
+    body = forms.CharField(label= '', max_length = 1000, required = True, 
+                widget=forms.Textarea(attrs={
+                    'class' : 'form-control',
+                    'placeholder': 'Type Your Question Here.'
+                    
+                    }))
 
 class AnswerForm(forms.Form):
-    question_id = forms.IntegerField(required = True)
-    body = forms.CharField(max_length = 10000, required = True)
+    body = forms.CharField(max_length = 5000, required = True, 
+                widget=forms.Textarea(attrs={
+                    'class' : 'form-control',
+                    'placeholder': 'Type Your Answer Here.',
+                    'default': ''
+                    }))

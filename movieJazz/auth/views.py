@@ -129,7 +129,7 @@ def signout(request):
         # logs out a user if he has signed in
         if request.user.is_authenticated:
             logout(request)
-            return HttpResponse('Sign out successful.', status = 200)
+            return HttpResponseRedirect('/')
         else:
             return HttpResponse('Not logged in.', status = 200)
     else:

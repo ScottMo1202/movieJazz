@@ -73,7 +73,7 @@ def questions(request):
         return HttpResponse(BadRequestMessage, status = 405)
 
 @csrf_exempt
-def ansQuestion(request):
+def ansQuestion(request, question_id):
     if not request.user.is_authenticated:
         return HttpResponse(AuthorizationError, status = 401)
     current_user = request.user
@@ -91,7 +91,7 @@ def ansQuestion(request):
                 return HttpResponse("Invalid registration request.", status = 400)
             else:
                 try:
-                    the_id = form.cleaned_data['question_id']
+                    the_id = question_id
                     the_answer = form.cleaned_data['body']
                     the_question = Question.objects.filter(id = the_id).get()
                     the_question.answer = the_answer

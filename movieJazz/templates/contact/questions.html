@@ -5,7 +5,6 @@
         <title>Chat Rooms</title>
     </head>
     <body>
-        <a href = "answer">Provide Answer</a>
         {% block content %}
         {% for each in questionList%}
         
@@ -13,6 +12,8 @@
             <p>{{each.id}}. {{each.body}}</p>
             {% if each.answer != None%}
                 <p>Answer: {{each.answer}}</p>
+            {% else %}
+                <a href = "answer/{{each.id}}">Provide Answer</a>
             {% endif %}
             <br />
         {% endfor %}

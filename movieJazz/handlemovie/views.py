@@ -182,9 +182,9 @@ def search(request):
             query = str(form.cleaned_data['input'])
             the_result = list(Movies.objects.filter(name__icontains = query).all().values())
             if (len(the_result) == 0):
-                return HttpResponse('No movie matches', status = 200)
+                return render(request, '../templates/movies/searchResult.html', {'movieList': the_result, 'query': query}, status = 200)
             else:
-                return render(request, '../templates/movies/searchResult.html', {'movieList': the_result}, status = 200)
+                return render(request, '../templates/movies/searchResult.html', {'movieList': the_result, 'query': query}, status = 200)
           except DatabaseError:
                 return HttpResponse(DatabaseErrorMessage, status=400)
           except Exception:
