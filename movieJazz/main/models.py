@@ -33,14 +33,22 @@ class Users(AbstractUser):
 class Movies(models.Model):
     name = models.CharField(max_length = 50, null = False)
     description = models.TextField(max_length = 5000, null = False)
-    runtime = models.PositiveIntegerField(validators=[MinValueValidator(1), MaxValueValidator(500)])
+    runtime = models.PositiveIntegerField(
+        validators=[MinValueValidator(1), MaxValueValidator(500)], 
+        null = False
+        )
+    url = models.URLField(null = False)
+
 
 class Tickets(models.Model):
     movie = models.ForeignKey(Movies, on_delete = models.CASCADE)
     time = models.DateTimeField(null = False)
     theater = models.ForeignKey(Theaters, on_delete = models.CASCADE)
     price = models.DecimalField(max_digits=5, decimal_places=2, null = False)
-    
+    amount = models.PositiveIntegerField(
+        validators=[MinValueValidator(0), MaxValueValidator(500)], 
+        null = False
+        )
     REGULAR = 'RE'
     IMAX = 'IM'
     THREED = '3D'

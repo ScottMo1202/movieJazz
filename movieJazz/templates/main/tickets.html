@@ -16,7 +16,8 @@
                             <li> Theater: {{ ticket.theater.name }}</li>
                             <li>Movie_type: {{ ticket.movie_type }}</li>
                             <li>Price: {{ ticket.price }}$</li>
-                            <li><a href = "theaters/{{ ticket.theater.id }}/tickets/{{ ticket.id }}/purchase/">But it</a></li>
+                            <li>Amount Left: {{ ticket.amount }}</li> 
+                            <li><a href = "tickets/{{ticket.id}}/purchase">Buy it</a></li>
                         </ul>
                 </ul>
             {% endfor %}

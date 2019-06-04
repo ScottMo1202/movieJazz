@@ -1,7 +1,12 @@
 from django import forms
 
 class SearchForm(forms.Form):
-    input = forms.CharField(max_length = 1000, required = True)
+    input = forms.CharField(label = '',max_length = 1000, 
+               widget=forms.TextInput(attrs={
+                   'class' : 'form-control',
+                   'placeholder': 'Search'
+                   
+                   }), required = True)
 
 class ReviewForm(forms.Form):
     ONE = '1'
@@ -17,5 +22,14 @@ class ReviewForm(forms.Form):
         (FOUR, 'Good'),
         (FIVE, 'Excellent')
     )
-    rating = forms.ChoiceField(required = True, choices = MOVIE_RATING_CHOICES, widget=forms.RadioSelect())
-    text = forms.CharField(max_length = 5000, required = True)
+    rating = forms.ChoiceField(label="", choices = MOVIE_RATING_CHOICES, required = True, 
+                widget=forms.Select(attrs={
+                    'class' : 'form-control',
+                    'placeholder': 'Subject'
+                    
+                    }))
+    text = forms.CharField(label= '', max_length = 5000, required = True, 
+                widget=forms.Textarea(attrs={
+                    'class' : 'form-control',
+                    'placeholder': 'Type Your Question Here.'
+                    }))

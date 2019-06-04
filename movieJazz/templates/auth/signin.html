@@ -125,6 +125,11 @@
         <div class="container">
             <div class="row">
                 <div class="col-md-6 col-md-offset-3 col-sm-10 text-center">
+                    {% if error %}
+                    <div class="alert alert-danger">
+                        {{ error }}
+                    </div>
+                    {% endif %}
                     <h3>Sign In</h3>
                     <br>
                     <br>

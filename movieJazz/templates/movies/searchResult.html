@@ -90,7 +90,7 @@
                                 <span class="icon-bar"></span>
                                 <span class="icon-bar"></span>
                             </button>
-                            <a class="navbar-brand" href="/"><img src="{% static 'logo.png'%}" alt="Linda"></a>
+                            <a class="navbar-brand" href="/"><img src="{% static 'logo.png'%}" alt="MovieJaz"></a>
                         </div>
                         <div id="navbar" class="navbar-collapse collapse">
                             <ul class="nav navbar-nav navbar-right">
@@ -127,7 +127,7 @@
             <div class="row">	
                 <div class="col-md-10 col-md-offset-1 col-sm-12 text-center">
                     <h1>Search Results for: " {{ query }} "</h1> <br>
-                    <button class="btn btn-lg btn-transparent"><a href = '/movies/search'>Keep Searching</a></button>
+                    <a href = '/movies/search'><button class="btn btn-lg btn-transparent">Keep Searching</button></a>
                 </div><!-- end col -->
             </div><!-- end row -->
         </div><!-- end container -->
@@ -140,12 +140,27 @@
                 {% else %}
                 {% for movie in movieList %}
                 <div class="col-md-4">
-                    <div class="case-box">
-                        <img src="{% static 'case_04.jpg'%}" alt="" class="img-responsive">
+                    <div class="case-box text-center" style="height:500px">
+                        <div class="center-block bgcolor">
+                            <img src={{movie.url}} alt="" class="img-responsive center-block" style="height:250px;object-fit:cover">
+                        </div>
                         <div class="case-info clearfix">
                             <div class="text-center">
                                 <h3><a href = '{{ movie.id }}'>{{movie.name}}</a></h3>
-                                <small>{{movie.description}}</small><br>
+                                <div class="panel-group" id="accordion">
+                                    <div class="panel panel-default">
+                                        <div class="panel-heading">
+                                            <h6 class="panel-title">
+                                                <a data-toggle="collapse" data-parent="#accordion" href="#collapse{{movie.id}}">Description <i class="fa fa-angle-down"></i></a>
+                                            </h6>
+                                        </div>
+                                        <div id="collapse{{movie.id}}" class="panel-collapse collapse">
+                                            <div class="panel-body">
+                                                <small>{{movie.description}}</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                                 <small>Runtime: {{movie.runtime}}</small><br><br>
                                 <button class="btn"><a href = '{{ movie.id }}/review'>Review It</a></button>
                             </div>

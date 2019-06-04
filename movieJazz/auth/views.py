@@ -111,7 +111,9 @@ def signin(request):
                     login(request, user)
                     return HttpResponseRedirect('/')
                 else:
-                    return HttpResponse("Invalid credentials.", status = 401)
+                    form = SigninForm()
+                    error = "Invaid Username Or Password."
+                    return render(request, '../templates/auth/signin.html', {'form': form, 'error': error}, status = 200)
             except KeyError:
                 return HttpResponse(KeyError, status = 400)
     else:

@@ -34,6 +34,32 @@ def jsonHandling(request):
     else:
         return data
 
+@csrf_exempt
+@sensitive_post_parameters()
+def rawMovies(request):
+    """ This view handles all requests made to /movies route. When a GET
+    request is made, all movies will be displayed as a webpage, with all
+    movie information such as name, description, and runtime. When a POST
+    request is made (only admins can make posts, and add movies to database)
+    new movie entries can be added to the website, with information like
+    name, description, and runtime specified. """
+    if request.method == 'GET':
+        try:
+            # get all movies and return all movie data in the template
+            moviesList = list(Movies.objects.all().values()) 
+            return JsonResponse(
+                moviesList, 
+                safe = False, 
+                content_type = 'application/json', 
+                status = 201
+                )
+        except DatabaseError:
+            return HttpResponse(DatabaseErrorMessage, status=400)
+        except Exception:
+            return HttpResponse(ExceptionMessage, status = 400)
+    else:
+        return HttpResponse("Method not allowed on /movies/raw.", status = 405)
+    
 
 @csrf_exempt
 @sensitive_post_parameters()
@@ -72,10 +98,15 @@ def movies(request):
             else:
                 try:
                     # create a new movie
-                    newMovie = Movies.objects.create(name = posted_data['name'], 
-                    description = posted_data['description'], runtime = posted_data['runtime'])
-                    newMovie.save()
-                    movieInfo = Movies.objects.all().values().filter(pk=newMovie.pk)[0]
+                    movieInfo = []
+
+                    for i in range(len(posted_data)):
+                        cur_data = posted_data[i]
+                        newMovie = Movies.objects.create(name = cur_data['name'], 
+                        description = cur_data['description'], runtime = cur_data['runtime'],
+                        url = cur_data['url'])
+                        newMovie.save()
+                        movieInfo.append(Movies.objects.all().values().filter(pk=newMovie.pk)[0])
                     # return the newly created movie as a json object
                     return JsonResponse(
                         movieInfo, 
@@ -128,6 +159,10 @@ def specificMovie(request, movieId):
                     # for the specific movie.
                     if 'description' in posted_data:
                         Movies.objects.filter(id= movieId).update(description= posted_data['description'])
+                    movieInfo = Movies.objects.all().values().filter(id= movieId)[0]
+
+                    if 'url' in posted_data:
+                        Movies.objects.filter(id= movieId).update(url= posted_data['url'])
                     movieInfo = Movies.objects.all().values().filter(id= movieId)[0]
                     
                     #returns the updated information of specific movie 

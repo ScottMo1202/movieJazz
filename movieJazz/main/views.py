@@ -270,17 +270,18 @@ def tickets(request, theater_id):
                 # try to create a new ticket
             try:
                 the_ticket_movie = Movies.objects.filter(id = posted_data['movie']).get()
-                print(the_ticket_movie.name)
                 the_ticket_theater = Theaters.objects.filter(id = theater_id).get()
                 the_ticket_time = posted_data['time']
                 the_ticket_price = posted_data['price']
                 the_ticket_movie_type = posted_data['movie_type']
+                the_ticket_amount = posted_data['amount']
                 new_ticket = Tickets.objects.create(
                     movie = the_ticket_movie, 
                     time = the_ticket_time, 
                     theater = the_ticket_theater, 
                     price = the_ticket_price, 
-                    movie_type = the_ticket_movie_type
+                    movie_type = the_ticket_movie_type,
+                    amount = the_ticket_amount
                     )
                 new_ticket.save()
                 ticketInfo = Tickets.objects.all().values().filter(pk = new_ticket.pk)[0]

@@ -41,7 +41,6 @@ INSTALLED_APPS = [
     'contactus.apps.ContactusConfig',
     'handlemovie.apps.HandlemovieConfig',
     'membership.apps.MembershipConfig',
-    "django_static_fontawesome"
 ]
 
 MIDDLEWARE = [
