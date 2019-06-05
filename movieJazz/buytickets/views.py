@@ -82,14 +82,18 @@ def addOffer(request, off_id):
     else:
         if request.method == 'GET':   
             try:
-                offer_id = off_id
-                offerObj = Offers.objects.get(id = offer_id)
+                offerObj = Offers.objects.get(id = off_id)
                 if current_user.membership != 'member':
-                    cart_list = list(Cart.objects.all().values().filter(user= request.user.id))
+                    cart_list = list(Cart.objects.all().filter(user= request.user.id))
 
                     for cart in cart_list:
-                        cartId = cart.id
-                        Cart.objects.filter(id = cartId).update(offer = offerObj)
+                        the_total_price = float(cart.quantity) * float(
+                            cart.ticket.price) * float(1 - offerObj.offer_perc)
+                        the_total_price = round(the_total_price, 2)
+                        Cart.objects.filter(id = cart.id).update(
+                            offer = offerObj, 
+                            total_price = the_total_price
+                            )
                 
                 return HttpResponseRedirect('/cart')
             except DatabaseError:

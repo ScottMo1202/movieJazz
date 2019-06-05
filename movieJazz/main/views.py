@@ -729,6 +729,7 @@ def theaterMovies(request, theater_id):
 
                 
 @csrf_exempt
+@sensitive_post_parameters()
 def addCart(request, theater_id, movie_id, ticket_id):
 
     if request.method == 'GET':
