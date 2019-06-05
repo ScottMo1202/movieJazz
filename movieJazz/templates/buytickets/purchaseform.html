@@ -1,15 +1,15 @@
-<!DOCTYPE html>
+<!DOCTYPE >
 <html>
     <head>
         <meta charset="utf-8"/>
-        <title> Tickets </title>
+        <title>Check Out</title>
     </head>
 
     <body>
-        {% block content %}
-            <form method = 'POST'>
-                {form | linebreaks}
-            </form>
-        {% endblock %}
+        <form method = 'POST'>
+            {% csrf_token %}
+            {{ form | linebreaks }}
+            <input type="submit" value="Purchase">
+        </form>
     </body>
 </html>

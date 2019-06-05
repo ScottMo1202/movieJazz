@@ -68,7 +68,7 @@ def questions(request):
         except Exception:
             return HttpResponse(ExceptionMessage, status = 400)
         else:
-            return render(request, '../templates/contact/questions.html', {"questionList": question_list}, status = 200)
+            return render(request, '../templates/contact/questions.html', {"questionList": question_list, 'user': request.user}, status = 200)
     else:
         return HttpResponse(BadRequestMessage, status = 405)
 

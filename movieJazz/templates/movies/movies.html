@@ -109,6 +109,7 @@
                                 {% if user.is_authenticated %}
                                 <li><a href="../user">Profile</a></li>
                                 <li><a href="../auth/signout">Sign Out</a></li>
+                                <li><a href="/cart"><i class="fa fa-shopping-cart"></i></a></li>
                                 <li class="lastlink hidden-xs hidden-sm"><a class="btn btn-primary" href="../user/memberships"><i class="fa fa-user-plus"></i>Upgrade</a></li>
                                 {% else %}
                                 <li><a href="../auth/signin">Sign In</a></li>
@@ -175,33 +176,33 @@
             <div class="container">
                 <div class="row">
                     <div class="col-md-3 col-sm-3">
-                    	<div class="widget clearfix">
-                    		<h4 class="widget-title">Company</h4>
-                    		<ul>
-                    			<li><a href="contact">Contact Us</a></li>
-                    			<li><a href="#">About Us</a></li>
-                    			<li><a href="#">Trademark</a></li>
-                    		</ul>
-                    	</div><!-- end widget -->
+                        <div class="widget clearfix">
+                            <h4 class="widget-title">Company</h4>
+                            <ul>
+                                <li><a href="/contact">Contact Us</a></li>
+                                <li><a href="/">About Us</a></li>
+                                <li><a href="/">Trademark</a></li>
+                            </ul>
+                        </div><!-- end widget -->
                     </div><!-- end col -->
 
                     <div class="col-md-3 col-sm-3">
-                    	<div class="widget clearfix">
-                    		<h4 class="widget-title">Services</h4>
-                    		<ul>
-                    			<li><a href="#">Movies</a></li>
-								<li><a href="#">Theaters</a></li>
-								{% if user.is_authenticated %}
-								<li><a href="../auth/signout">Sign Out</a></li>
-								<li><a href="../user">Profile</a></li>
-                    			<li><a href="../user/memberships">Upgrade</a></li>
-								{% else %}
-								<li><a href="../auth/signin">Sign In</a></li>
-                    			<li><a href="../auth/register">Register</a></li>
-								{% endif %}
-                    			
-                    		</ul>
-                    	</div><!-- end widget -->
+                        <div class="widget clearfix">
+                            <h4 class="widget-title">Services</h4>
+                            <ul>
+                                <li><a href="/movies">Movies</a></li>
+                                <li><a href="/theaters">Theaters</a></li>
+                                {% if user.is_authenticated %}
+                                <li><a href="../auth/signout">Sign Out</a></li>
+                                <li><a href="../user">Profile</a></li>
+                                <li><a href="../user/memberships">Upgrade</a></li>
+                                {% else %}
+                                <li><a href="../auth/signin">Sign In</a></li>
+                                <li><a href="../auth/register">Register</a></li>
+                                {% endif %}
+                                
+                            </ul>
+                        </div><!-- end widget -->
                     </div><!-- end col -->
 
                     <div class="col-md-3 col-sm-3">

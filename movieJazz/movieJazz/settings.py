@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'contactus.apps.ContactusConfig',
     'handlemovie.apps.HandlemovieConfig',
     'membership.apps.MembershipConfig',
+    'buytickets.apps.BuyticketsConfig'
 ]
 
 MIDDLEWARE = [

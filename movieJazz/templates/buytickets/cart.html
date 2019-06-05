@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<body>
+    <h1>Cart</h1>
+    {% block content %}
+    {% if cartList %}
+    {% for cartItem in cartList %}
+        <ul>
+            <li>Ticket: {{cartItem.ticket}}</li>
+            <li>Quantity: {{cartItem.quantity}}</li>
+            <li>Offer: {{cartItem.offer}}</li>
+            <li>Total Price: {{cartItem.total_price}}</li>
+            <form action="{% url '/cart' %}?card_id={{cartItem.id}}" method="DELETE">
+                {% csrf_token %}
+                <input type="submit" value="Submit">
+            </form>
+        </ul>
+    {% endfor %}
+        <input type="submit" value="Check Out">
+    {% else %}
+        <p>Cart Empty
+        </p>
+    {% endif %}
+    {% endblock %}
+</body>
+</html>

@@ -2,7 +2,7 @@
 <html>
     <head>
         <meta charset="utf-8"/>
-        <title>Chat Rooms</title>
+        <title>FAQ</title>
     </head>
     <body>
         {% block content %}
@@ -13,7 +13,11 @@
             {% if each.answer != None%}
                 <p>Answer: {{each.answer}}</p>
             {% else %}
+                {% if user %}
+                {% if user.membership == 'administrator' %}  
                 <a href = "answer/{{each.id}}">Provide Answer</a>
+                {% endif %}
+                {% endif %}
             {% endif %}
             <br />
         {% endfor %}

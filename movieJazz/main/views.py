@@ -37,6 +37,23 @@ def defaultOffer():
             return HttpResponse(DatabaseErrorMessage, status=400)
         except Exception:
             return HttpResponse(ExceptionMessage, status = 400)
+    
+    if len(Offers.objects.all().values().filter(
+        offer_name="Membership", offer_perc=.40, description = "Membership")) == 0:
+        
+        # Try to create default offer if it does not already exist
+        try:
+            offer = Offers.objects.create(
+                offer_name = "Membership", 
+                offer_perc =.40 , 
+                description = "Membership"
+                )
+            offer.save()
+        
+        except DatabaseError:
+            return HttpResponse(DatabaseErrorMessage, status=400)
+        except Exception:
+            return HttpResponse(ExceptionMessage, status = 400)
 
 defaultOffer()
 
@@ -356,7 +373,7 @@ def transactions(request):
                     curTran['date'] = tran.date
                     returnList.append(curTran)
                     # return as a json object
-                return JsonResponse(returnList, safe = False, content_type = 'application/json')
+                return render(request, '../templates/membership/tickettransactions.html', {'tranList': returnList}, status = 200)
             except DatabaseError:
                 return HttpResponse(DatabaseError, status = 400)
             except KeyError:

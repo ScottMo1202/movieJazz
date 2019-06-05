@@ -25,5 +25,6 @@ urlpatterns = [
     path(r'main/', include('main.urls')),
     path(r'auth/', include('auth.urls')),
     path(r'contact/', include('contactus.urls')),
-    path(r'user/', include('membership.urls'))
+    path(r'user/', include('membership.urls')),
+    path(r'cart/', include('buytickets.urls'))
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

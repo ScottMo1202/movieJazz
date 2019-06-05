@@ -109,6 +109,7 @@
                                 {% if user.is_authenticated %}
                                 <li><a href="../user">Profile</a></li>
                                 <li><a href="../auth/signout">Sign Out</a></li>
+                                <li><a href="/cart"><i class="fa fa-shopping-cart"></i></a></li>
                                 <li class="lastlink hidden-xs hidden-sm"><a class="btn btn-primary" href="../user/memberships"><i class="fa fa-user-plus"></i>Upgrade</a></li>
                                 {% else %}
                                 <li><a href="../auth/signin">Sign In</a></li>
@@ -126,7 +127,9 @@
             <div class="row">	
                 <div class="col-md-10 col-md-offset-1 col-sm-12 text-center">
                     <h1>Offers</h1>
-                    <p class="lead">Use these offers if they fit your purchace. If Offer is valid, it will be applied to your cart.</p>
+                    <p class="lead">Use these offers if they fit your purchace. If Offer is valid, it will be applied to your cart. 
+                        Offers do not apply on top of the 40% discount given to members.
+                    </p>
                 </div><!-- end col -->
             </div><!-- end row -->
         </div><!-- end container -->
@@ -135,7 +138,7 @@
         <div class="container">
             <div class="row lightcasestudies">
                     {% for offer in offersList %}
-                    {% if offer.offer_name != 'No Offer' %}
+                    {% if offer.offer_name != 'No Offer' and offer.offer_name != 'Membership' %}
                     <div class="row callout lb nopad bgcolor">
                         <div class="col-md-9">
                             <h2>{{offer.offer_name}}</h2>
@@ -143,10 +146,14 @@
                         </div>
                         <div class="col-md-3">
                             <div class="button-wrap text-center">
-                                <a href = '#' class="btn btn-transparent btn-light btn-lg">Apply</a>
+
+                                    <form action="/cart?offer_id={{offer.id}}" method="PATCH">
+                                        {% csrf_token %}
+                                        <input type="submit" value="Apply" class="btn btn-transparent btn-lg">
+                                    </form>
                             </div>
                         </div>
-                    </div>
+                    </div><br>
                     {% endif %}
                     {% endfor %}
             </div>
@@ -157,34 +164,35 @@
             <div class="container">
                 <div class="row">
                     <div class="col-md-3 col-sm-3">
-                    	<div class="widget clearfix">
-                    		<h4 class="widget-title">Company</h4>
-                    		<ul>
-                    			<li><a href="contact">Contact Us</a></li>
-                    			<li><a href="#">About Us</a></li>
-                    			<li><a href="#">Trademark</a></li>
-                    		</ul>
-                    	</div><!-- end widget -->
+                        <div class="widget clearfix">
+                            <h4 class="widget-title">Company</h4>
+                            <ul>
+                                <li><a href="/contact">Contact Us</a></li>
+                                <li><a href="/">About Us</a></li>
+                                <li><a href="/">Trademark</a></li>
+                            </ul>
+                        </div><!-- end widget -->
                     </div><!-- end col -->
 
                     <div class="col-md-3 col-sm-3">
-                    	<div class="widget clearfix">
-                    		<h4 class="widget-title">Services</h4>
-                    		<ul>
-                    			<li><a href="#">Movies</a></li>
-								<li><a href="#">Theaters</a></li>
-								{% if user.is_authenticated %}
-								<li><a href="../auth/signout">Sign Out</a></li>
-								<li><a href="../user">Profile</a></li>
-                    			<li><a href="../user/memberships">Upgrade</a></li>
-								{% else %}
-								<li><a href="../auth/signin">Sign In</a></li>
-                    			<li><a href="../auth/register">Register</a></li>
-								{% endif %}
-                    			
-                    		</ul>
-                    	</div><!-- end widget -->
+                        <div class="widget clearfix">
+                            <h4 class="widget-title">Services</h4>
+                            <ul>
+                                <li><a href="/movies">Movies</a></li>
+                                <li><a href="/theaters">Theaters</a></li>
+                                {% if user.is_authenticated %}
+                                <li><a href="../auth/signout">Sign Out</a></li>
+                                <li><a href="../user">Profile</a></li>
+                                <li><a href="../user/memberships">Upgrade</a></li>
+                                {% else %}
+                                <li><a href="../auth/signin">Sign In</a></li>
+                                <li><a href="../auth/register">Register</a></li>
+                                {% endif %}
+                                
+                            </ul>
+                        </div><!-- end widget -->
                     </div><!-- end col -->
+    
 
                     <div class="col-md-3 col-sm-3">
                     	<div class="widget clearfix">
