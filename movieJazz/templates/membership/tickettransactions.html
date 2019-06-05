@@ -7,9 +7,11 @@
     {% for tranItem in tranList %}
         <ul>
             <li>Ticket: {{tranItem.ticket}}</li>
+            <li>Price: {{tranItem.price}}</li>
             <li>Quantity: {{tranItem.quantity}}</li>
-            <li>Offer: {{tranItem.offer}}</li>
+            <li>Offer Discount: {{tranItem.offer}}</li>
             <li>Total Price: {{tranItem.total_price}}</li>
+            <li>Date: {{tranItem.date}}</li>
         </ul>
     {% endfor %}
     {% else %}

@@ -6,6 +6,8 @@ import json
 from django.views.decorators.debug import sensitive_post_parameters
 from django.views.decorators.csrf import csrf_exempt
 import datetime
+from buytickets.models import Cart
+from .forms import AddCartForm
 # Create your views here.
 
 JSONDecodeFailMessage = "Error decoding JSON body. Please ensure your JSON file is valid."
@@ -247,9 +249,12 @@ def specificTheater(request, theater_id):
     else:
         return HttpResponse(BadRequestMessage, status = 405)
 
+
+
+
 @csrf_exempt
 @sensitive_post_parameters()
-def tickets(request, theater_id):
+def tickets(request, theater_id, movie_id):
     """ This view handles all requests made to /theaters/<id>/tickets.
     When a GET request is made, all tickets available in the specific 
     theater will be displayed. When a POST (only admins can post and delete)
@@ -262,7 +267,7 @@ def tickets(request, theater_id):
     if request.method == "GET":
         try:
             # get all tickets
-            all_tickets = Tickets.objects.filter(theater = theater_id).all()
+            all_tickets = Tickets.objects.filter(theater = theater_id, movie = movie_id).all()
         except DatabaseError:
             return HttpResponse(DatabaseError, status = 400)
         except Exception:
@@ -286,7 +291,7 @@ def tickets(request, theater_id):
                 return HttpResponse(JSONDecodeFailMessage, status = 400)
                 # try to create a new ticket
             try:
-                the_ticket_movie = Movies.objects.filter(id = posted_data['movie']).get()
+                the_ticket_movie = Movies.objects.filter(id = movie_id).get()
                 the_ticket_theater = Theaters.objects.filter(id = theater_id).get()
                 the_ticket_time = posted_data['time']
                 the_ticket_price = posted_data['price']
@@ -363,12 +368,14 @@ def transactions(request):
         if request.method == 'GET':
             try:
                 # get all transactions and return as a list
-                transaction_list = list(Transactions.objects.all().values().filter(user= request.user.id))
+                transaction_list = list(Transactions.objects.all().filter(user= request.user.id))
                 returnList = []
                 for tran in transaction_list:
                     curTran = {}
                     curTran['movie'] = tran.ticket.movie.name
+                    curTran['price'] = tran.ticket.price
                     curTran['quantity'] = tran.quantity
+                    curTran['offer'] = tran.offer.offer_perc
                     curTran['total_price'] = tran.total_price
                     curTran['date'] = tran.date
                     returnList.append(curTran)
@@ -682,10 +689,110 @@ def specificOffer(request, offerId):
 
 
             
-            
+@csrf_exempt
+@sensitive_post_parameters()
+def theaterMovies(request, theater_id):
+    """ This view handles all requests made to /theaters/<id>/tickets.
+    When a GET request is made, all tickets available in the specific 
+    theater will be displayed. When a POST (only admins can post and delete)
+    request is made, new tickets can be added to the theater when infomation
+    of about movie, price movie type, and time are provided. When a DELETE 
+    request is made specific tickets can be deleted from the theater. Only
+    tickets for the specified theater can be deleted.
+    """
+    current_user = request.user
+    if request.method == "GET":
+        try:
+            # get all tickets
+            all_movies = Tickets.objects.filter(
+                theater = theater_id
+                ).all().values('movie').distinct()
+
+            movieList = []
+            for movie in all_movies:
+                movieList.append(Movies.objects.get(id = movie['movie']))
+
+        except DatabaseError:
+            return HttpResponse(DatabaseError, status = 400)
+        except Exception:
+            return HttpResponse(ExceptionMessage, status = 400)
+        else:
+            # return all tickets data as a json object
+            return render(
+                request,
+                '../templates/main/theaterMovies.html',
+                {'movieList': movieList},
+                status = 200
+            )
+    else:
+        return HttpResponse(BadRequestMessage, status = 405)           
 
                 
+@csrf_exempt
+def addCart(request, theater_id, movie_id, ticket_id):
 
+    if request.method == 'GET':
+        try:
+            form = AddCartForm()
+            return render(request, '../templates/main/addCart.html', {'form': form}, status = 200)
+        except DatabaseError:
+            return HttpResponse(DatabaseErrorMessage, status=400)
+        except KeyError:
+            return HttpResponse(KeyErrorMessage, status = 400)
+        except Exception:
+            return HttpResponse(ExceptionMessage, status = 400)
+
+    if(request.method == 'POST'): 
+        try:     
+            current_user = request.user
+            if not current_user.is_authenticated:
+                return HttpResponse(AuthorizationError, status = 401)
+
+            form = AddCartForm(request.POST)
+            if not form.is_valid():
+                return HttpResponse("Bad login form.", status = 400)
+
+            the_quantity = int(form.cleaned_data['quantity'])
+            the_user = Users.objects.get(id = current_user.id)
+            the_ticket = Tickets.objects.get(id = ticket_id)
+
+            if(the_quantity > the_ticket.amount):
+                error = "There Are Not Enough Tickets For This Movie Showing."
+                form = AddCartForm()
+                return render(request, '../templates/main/addCart.html', {'form': form, 'error': error}, status = 200)
+            else:
+                Tickets.objects.filter(id = ticket_id).update(amount = the_ticket.amount - the_quantity)
+            
+            if(current_user.membership == 'member'):
+                the_offer = Offers.objects.get(offer_name = 'Membership')
+            else:
+                the_offer = Offers.objects.get(offer_name = 'No Offer')
+
+
+            the_total_price = float(the_quantity) * float(the_ticket.price) * float(
+                1 - the_offer.offer_perc)
+ 
+            the_total_price = round(the_total_price, 2)
+
+            new_cart = Cart.objects.create(
+                user = the_user, 
+                ticket = the_ticket, 
+                quantity = the_quantity, 
+                offer = the_offer, 
+                total_price = the_total_price
+                )
+
+            new_cart.save()
+            return HttpResponseRedirect("/cart")
+        except DatabaseError:
+            return HttpResponse(DatabaseErrorMessage, status=400)
+        except KeyError:
+            return HttpResponse(KeyErrorMessage, status = 400)
+        except Exception:
+            return HttpResponse(ExceptionMessage, status = 400)                   
+
+    else:
+        return HttpResponse("Method not allowed on /.", status = 405)
 
 
 

@@ -10,13 +10,13 @@
             <li>Quantity: {{cartItem.quantity}}</li>
             <li>Offer: {{cartItem.offer}}</li>
             <li>Total Price: {{cartItem.total_price}}</li>
-            <form action="{% url '/cart' %}?card_id={{cartItem.id}}" method="DELETE">
-                {% csrf_token %}
-                <input type="submit" value="Submit">
+
+            <form action="/cart/{{cartItem.id}}">
+                <input type="submit" value="Delete">
             </form>
         </ul>
     {% endfor %}
-        <input type="submit" value="Check Out">
+        <a href = '/cart/checkout' class="btn btn-transparent btn-lg">Check Out</a>
     {% else %}
         <p>Cart Empty
         </p>

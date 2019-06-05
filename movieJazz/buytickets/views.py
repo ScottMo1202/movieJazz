@@ -3,7 +3,7 @@ from django.shortcuts import render
 # Create your views here.
 from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
-from main.models import Movies, Users, Reviews, Tickets, Offers
+from main.models import Movies, Users, Reviews, Tickets, Offers, Transactions
 from .models import Cart
 from .forms import CartForm, CartDeleteForm
 from django.db import DatabaseError
@@ -46,20 +46,22 @@ def cart(request):
         if request.method == 'GET':
             try:
                 # get all transactions and return as a list
-                cart_list = list(Cart.objects.all().values().filter(user= request.user.id))
+                cart_list = list(Cart.objects.all().filter(user= request.user.id))
+                print(cart_list)
                 returnList = []
                 for cart in cart_list:
                     curCart = {}
                     curCart['id'] = cart.id
                     curCart['ticket'] = cart.ticket.movie.name
                     curCart['quantity'] = cart.quantity
-                    curCart['offer'] = cart.offer.name
-                    curCart['total_price'] = cart.total_price
+                    curCart['offer'] = cart.offer.offer_name
+                    curCart['total_price'] = float(cart.total_price)
                     returnList.append(curCart)
+                
                 return render(
                     request, 
                     '../templates/buytickets/cart.html', 
-                    {'cartList': cart_list}, 
+                    {'cartList': returnList}, 
                     status = 200
                     )
             except DatabaseError:
@@ -68,19 +70,20 @@ def cart(request):
                 return HttpResponse(KeyErrorMessage, status = 400)
             except Exception:
                 return HttpResponse(ExceptionMessage, status = 400)
-        
-        elif request.method == 'POST':
-            return HttpResponse(ExceptionMessage, status = 400)
+        else:
+            return HttpResponse(BadRequestMessage, status = 405)
 
-        elif request.method == 'PATCH':   
-            if not form.is_valid():
-                return HttpResponse("Bad login form.", status = 400)
-            
+@csrf_exempt
+@sensitive_post_parameters()
+def addOffer(request, off_id):
+    current_user = request.user
+    if not current_user.is_authenticated:
+        return HttpResponse(AuthorizationError, status = 401)
+    else:
+        if request.method == 'GET':   
             try:
-                offer_id = form.cleaned_data['offer_id']
-
+                offer_id = off_id
                 offerObj = Offers.objects.get(id = offer_id)
-                
                 if current_user.membership != 'member':
                     cart_list = list(Cart.objects.all().values().filter(user= request.user.id))
 
@@ -95,21 +98,27 @@ def cart(request):
                 return HttpResponse(KeyErrorMessage, status = 400)
             except Exception:
                 return HttpResponse(ExceptionMessage, status = 400)
+        else:
+            return HttpResponse(BadRequestMessage, status = 405)
 
-        
-        elif request.method == 'DELETE':
-            form = CartDeleteForm(request.DELETE)
-            if not form.is_valid():
-                return HttpResponse("Bad login form.", status = 400)
+
+@csrf_exempt
+@sensitive_post_parameters()
+def alterCart(request, cart_id):
+    current_user = request.user
+    if not current_user.is_authenticated:
+        return HttpResponse(AuthorizationError, status = 401)
+    else:     
+        if request.method == 'GET':
             try:
-                del_id = form.cleaned_data['cart_id']
+                del_id = cart_id
                 cart_item = Cart.objects.get(id = del_id)
                 ticket_id = cart_item.ticket.id
                 ticket_amount = cart_item.ticket.amount
                 quant = cart_item.quantity
                 
                 Cart.objects.filter(id= del_id).delete()
-                Tickets.objects.filter(id= ticket_id).update(quantity= ticket_amount + quant)
+                Tickets.objects.filter(id= ticket_id).update(amount= ticket_amount + quant)
                 
                 return HttpResponseRedirect('/cart')
             except DatabaseError:
@@ -136,7 +145,7 @@ def checkout(request):
             if not form.is_valid():
                 return HttpResponse("Invalid registration request.", status = 400)
             else:
-                cartList = list(Cart.objects.all().values().filter(user= request.user.id))
+                cartList = list(Cart.objects.all().filter(user= request.user.id))
                 for cart in cartList:
                     
                     the_user = Users.objects.filter(id = cart.user.id).get()

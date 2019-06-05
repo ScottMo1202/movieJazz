@@ -147,8 +147,7 @@
                         <div class="col-md-3">
                             <div class="button-wrap text-center">
 
-                                    <form action="/cart?offer_id={{offer.id}}" method="PATCH">
-                                        {% csrf_token %}
+                                    <form action="/cart/offers/{{offer.id}}">
                                         <input type="submit" value="Apply" class="btn btn-transparent btn-lg">
                                     </form>
                             </div>

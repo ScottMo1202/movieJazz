@@ -8,5 +8,7 @@ from django.conf import settings
 app_name = 'buytickets'
 urlpatterns = [
     path(r'', views.cart, name = 'cart'),
+    path(r'<int:cart_id>', views.alterCart, name = 'alterCart'),
+    path(r'offers/<int:off_id>', views.addOffer, name = 'addOffer'),
     path(r'checkout', views.checkout, name = 'checkout'),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

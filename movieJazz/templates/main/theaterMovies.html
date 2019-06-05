@@ -12,7 +12,7 @@
     <meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
     
     <!-- Site Meta -->
-    <title>Theaters</title>
+    <title>Movies</title>
     <meta name="keywords" content="">
     <meta name="description" content="">
     <meta name="author" content="">
@@ -97,23 +97,23 @@
                                 <li>
                                     <a href="/movies">Movies </a>
                                 </li>
-                                <li class="active"><a href="../theaters">Theaters</a></li>
-                                <li><a href="../offers">Offers</a></li>
-                                <li><a href="../contact">Contact Us</a></li>
+                                <li class="active"><a href="/theaters">Theaters</a></li>
+                                <li><a href="/offers">Offers</a></li>
+                                <li><a href="/contact">Contact Us</a></li>
                                 {% if user.is_authenticated %}
 								{% if user.id == 1 %}
-								<li><a href="../users">Users</a></li>
+								<li><a href="/users">Users</a></li>
 								{% endif %}
 								{% endif %}
                                 <li></li>
                                 {% if user.is_authenticated %}
-                                <li><a href="../user">Profile</a></li>
-                                <li><a href="../auth/signout">Sign Out</a></li>
+                                <li><a href="/user">Profile</a></li>
+                                <li><a href="/auth/signout">Sign Out</a></li>
                                 <li><a href="/cart"><i class="fa fa-shopping-cart"></i></a></li>
-                                <li class="lastlink hidden-xs hidden-sm"><a class="btn btn-primary" href="../user/memberships"><i class="fa fa-user-plus"></i>Upgrade</a></li>
+                                <li class="lastlink hidden-xs hidden-sm"><a class="btn btn-primary" href="/user/memberships"><i class="fa fa-user-plus"></i>Upgrade</a></li>
                                 {% else %}
-                                <li><a href="../auth/signin">Sign In</a></li>
-                                <li class="lastlink hidden-xs hidden-sm"><a class="btn btn-primary" href="../auth/register"><i class="fa fa-user-plus"></i>Register</a></li>
+                                <li><a href="/auth/signin">Sign In</a></li>
+                                <li class="lastlink hidden-xs hidden-sm"><a class="btn btn-primary" href="/auth/register"><i class="fa fa-user-plus"></i>Register</a></li>
                                 {% endif %}
                             </ul>
                         </div><!--/.nav-collapse -->
@@ -126,8 +126,9 @@
         <div class="container">
             <div class="row">	
                 <div class="col-md-10 col-md-offset-1 col-sm-12 text-center">
-                    <h1>Theaters</h1>
-                    <p class="lead">Check Theaters near you for what movies are playing there along with buying tickets for showings.</p>
+                    <h1>Movies</h1>
+                    <p class='lead'>Browse and Review the Latest Movies. Use the Button Below to Search for Movies.</p>
+                    <a href = '/movies/search'><button class="btn btn-lg btn-transparent">Search a movie!</button></a>
                 </div><!-- end col -->
             </div><!-- end row -->
         </div><!-- end container -->
@@ -135,19 +136,37 @@
     <section class="section">
         <div class="container">
             <div class="row lightcasestudies">
-                {% for theater in theaters %}
-				<div class="row callout lb nopad bgcolor">
-                    <div class="col-md-9">
-                        <h2>{{theater.name}}</h2>
-                        <small>{{theater.street_number}} {{theater.street_name}}</small><br>
-                        <small>{{ theater.city }}, {{ theater.state }} {{theater.post_code}}</small><br>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="button-wrap text-center">
-                            <a href = 'theaters/{{ theater.id }}/movies' class="btn btn-transparent btn-light btn-lg">View Tickets</a>
+                {% for movie in movieList %}
+                <div class="col-md-4">
+                    <div class="case-box text-center" style="height:500px">
+                        <div class="center-block bgcolor">
+                            <img src={{movie.url}} alt="" class="img-responsive center-block" style="height:250px;object-fit:cover">
                         </div>
-                    </div>
-                </div>
+                        <div class="case-info clearfix">
+                            <div class="text-center">
+                                <h3>{{movie.name}}</h3>
+        
+                                <div class="panel-group" id="accordion">
+                                    <div class="panel panel-default">
+                                        <div class="panel-heading">
+                                            <h6 class="panel-title">
+                                                <a data-toggle="collapse" data-parent="#accordion" href="#collapse{{movie.id}}">Description <i class="fa fa-angle-down"></i></a>
+                                            </h6>
+                                        </div>
+                                        <div id="collapse{{movie.id}}" class="panel-collapse collapse">
+                                            <div class="panel-body">
+                                                <small>{{movie.description}}</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <small>Runtime: {{movie.runtime}}</small><br><br>
+                                <a href = 'movies/{{ movie.id }}/tickets'><button class="btn">Buy Tickets</button></a>
+                            </div>
+                        </div><!-- end case-info -->
+                    </div><!-- end case-box -->
+                </div><!-- end col -->
                 {% endfor %}
             </div>
         </div><!-- end container -->
@@ -174,12 +193,12 @@
                                 <li><a href="/movies">Movies</a></li>
                                 <li><a href="/theaters">Theaters</a></li>
                                 {% if user.is_authenticated %}
-                                <li><a href="../auth/signout">Sign Out</a></li>
-                                <li><a href="../user">Profile</a></li>
-                                <li><a href="../user/memberships">Upgrade</a></li>
+                                <li><a href="/auth/signout">Sign Out</a></li>
+                                <li><a href="/user">Profile</a></li>
+                                <li><a href="/user/memberships">Upgrade</a></li>
                                 {% else %}
-                                <li><a href="../auth/signin">Sign In</a></li>
-                                <li><a href="../auth/register">Register</a></li>
+                                <li><a href="/auth/signin">Sign In</a></li>
+                                <li><a href="/auth/register">Register</a></li>
                                 {% endif %}
                                 
                             </ul>
