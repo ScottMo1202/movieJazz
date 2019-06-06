@@ -7,7 +7,7 @@
     <body>
             <form action = '/contact/answer' method = 'POST'>
                 {% csrf_token %}
-                {{form | linebreaks}}
+                {{form}}
                 <input type="submit" value="Submit">
             </form>
     </body>

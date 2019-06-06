@@ -146,10 +146,11 @@
                         </div>
                         <div class="col-md-3">
                             <div class="button-wrap text-center">
-
+                                    {% if user.is_authenticated %}
                                     <form action="/cart/offers/{{offer.id}}">
                                         <input type="submit" value="Apply" class="btn btn-transparent btn-lg">
                                     </form>
+                                    {% endif %}
                             </div>
                         </div>
                     </div><br>

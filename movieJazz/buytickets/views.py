@@ -53,6 +53,7 @@ def cart(request):
                     curCart = {}
                     curCart['id'] = cart.id
                     curCart['ticket'] = cart.ticket.movie.name
+                    curCart['time'] = cart.ticket.time
                     curCart['quantity'] = cart.quantity
                     curCart['offer'] = cart.offer.offer_name
                     curCart['total_price'] = float(cart.total_price)

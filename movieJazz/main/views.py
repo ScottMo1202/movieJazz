@@ -374,6 +374,7 @@ def transactions(request):
                     curTran = {}
                     curTran['movie'] = tran.ticket.movie.name
                     curTran['price'] = tran.ticket.price
+                    curTran['time'] = tran.ticket.time
                     curTran['quantity'] = tran.quantity
                     curTran['offer'] = tran.offer.offer_perc
                     curTran['total_price'] = tran.total_price
