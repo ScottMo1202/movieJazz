@@ -1,4 +1,8 @@
-# movieJazz
+# MovieJazz
+
+Link to Hosted Website: http://moviejazz.azurewebsites.net/ <br />
+**(Enable Mixed Context near the URL bar, you need to enable "unsafe scripts" in order to see font awesome icons. This is especially important since the cart icon in the navigation bar is a font awesome icon.)** <br />
+
 ![](./database-schema.png)
 
 We created an admin account automatically as the server starts, some requests are restricted only to admins. This will be mentioned in the later as well.  <br />
