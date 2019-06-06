@@ -2,7 +2,6 @@ from django.db import models
 from django.http import HttpResponse
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.contrib.auth.models import AbstractUser
-
 # Create your models here.
 
 class Theaters(models.Model):
@@ -34,14 +33,22 @@ class Users(AbstractUser):
 class Movies(models.Model):
     name = models.CharField(max_length = 50, null = False)
     description = models.TextField(max_length = 5000, null = False)
-    runtime = models.PositiveIntegerField(validators=[MinValueValidator(1), MaxValueValidator(500)])
+    runtime = models.PositiveIntegerField(
+        validators=[MinValueValidator(1), MaxValueValidator(500)], 
+        null = False
+        )
+    url = models.URLField(null = False)
+
 
 class Tickets(models.Model):
     movie = models.ForeignKey(Movies, on_delete = models.CASCADE)
     time = models.DateTimeField(null = False)
     theater = models.ForeignKey(Theaters, on_delete = models.CASCADE)
     price = models.DecimalField(max_digits=5, decimal_places=2, null = False)
-    
+    amount = models.PositiveIntegerField(
+        validators=[MinValueValidator(0), MaxValueValidator(500)], 
+        null = False
+        )
     REGULAR = 'RE'
     IMAX = 'IM'
     THREED = '3D'
@@ -87,7 +94,6 @@ class Reviews(models.Model):
         choices=MOVIE_RATING_CHOICES,
         null = False
     )
-
     user = models.ForeignKey(Users, on_delete = models.CASCADE)
     date = models.DateTimeField(auto_now_add= True)
 

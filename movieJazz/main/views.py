@@ -6,6 +6,8 @@ import json
 from django.views.decorators.debug import sensitive_post_parameters
 from django.views.decorators.csrf import csrf_exempt
 import datetime
+from buytickets.models import Cart
+from .forms import AddCartForm
 # Create your views here.
 
 JSONDecodeFailMessage = "Error decoding JSON body. Please ensure your JSON file is valid."
@@ -37,6 +39,23 @@ def defaultOffer():
             return HttpResponse(DatabaseErrorMessage, status=400)
         except Exception:
             return HttpResponse(ExceptionMessage, status = 400)
+    
+    if len(Offers.objects.all().values().filter(
+        offer_name="Membership", offer_perc=.40, description = "Membership")) == 0:
+        
+        # Try to create default offer if it does not already exist
+        try:
+            offer = Offers.objects.create(
+                offer_name = "Membership", 
+                offer_perc =.40 , 
+                description = "Membership"
+                )
+            offer.save()
+        
+        except DatabaseError:
+            return HttpResponse(DatabaseErrorMessage, status=400)
+        except Exception:
+            return HttpResponse(ExceptionMessage, status = 400)
 
 defaultOffer()
 
@@ -52,7 +71,6 @@ def home(request):
     else:
         return HttpResponse("Method not allowed on /.", status = 405)
 
-@csrf_exempt
 @sensitive_post_parameters()
 def jsonHandling(request):
     """ This function's main purpose is to manage error handling for 
@@ -66,7 +84,6 @@ def jsonHandling(request):
         return ExceptionMessage
     else:
         return data
-
 
 @csrf_exempt
 @sensitive_post_parameters()
@@ -232,9 +249,12 @@ def specificTheater(request, theater_id):
     else:
         return HttpResponse(BadRequestMessage, status = 405)
 
+
+
+
 @csrf_exempt
 @sensitive_post_parameters()
-def tickets(request, theater_id):
+def tickets(request, theater_id, movie_id):
     """ This view handles all requests made to /theaters/<id>/tickets.
     When a GET request is made, all tickets available in the specific 
     theater will be displayed. When a POST (only admins can post and delete)
@@ -247,19 +267,19 @@ def tickets(request, theater_id):
     if request.method == "GET":
         try:
             # get all tickets
-            all_tickets = list(Tickets.objects.filter(theater = theater_id).all().values())
+            all_tickets = Tickets.objects.filter(theater = theater_id, movie = movie_id).all()
         except DatabaseError:
             return HttpResponse(DatabaseError, status = 400)
         except Exception:
             return HttpResponse(ExceptionMessage, status = 400)
         else:
             # return all tickets data as a json object
-            return JsonResponse(
-                all_tickets, 
-                safe = False, 
-                content_type = 'application/json', 
+            return render(
+                request,
+                '../templates/main/tickets.html',
+                {'ticketList': all_tickets},
                 status = 200
-                )
+            )
     
     elif request.method == 'POST':
         if not current_user.is_authenticated:
@@ -271,17 +291,19 @@ def tickets(request, theater_id):
                 return HttpResponse(JSONDecodeFailMessage, status = 400)
                 # try to create a new ticket
             try:
-                the_ticket_movie = Movies.objects.filter(id = posted_data['movie']).get()
+                the_ticket_movie = Movies.objects.filter(id = movie_id).get()
                 the_ticket_theater = Theaters.objects.filter(id = theater_id).get()
                 the_ticket_time = posted_data['time']
                 the_ticket_price = posted_data['price']
                 the_ticket_movie_type = posted_data['movie_type']
+                the_ticket_amount = posted_data['amount']
                 new_ticket = Tickets.objects.create(
                     movie = the_ticket_movie, 
                     time = the_ticket_time, 
                     theater = the_ticket_theater, 
                     price = the_ticket_price, 
-                    movie_type = the_ticket_movie_type
+                    movie_type = the_ticket_movie_type,
+                    amount = the_ticket_amount
                     )
                 new_ticket.save()
                 ticketInfo = Tickets.objects.all().values().filter(pk = new_ticket.pk)[0]
@@ -328,7 +350,6 @@ def tickets(request, theater_id):
     else:
         return HttpResponse(BadRequestMessage, status = 405)
 
-
 @csrf_exempt
 @sensitive_post_parameters()
 def transactions(request):
@@ -347,17 +368,20 @@ def transactions(request):
         if request.method == 'GET':
             try:
                 # get all transactions and return as a list
-                transaction_list = list(Transactions.objects.all().values().filter(user= request.user.id))
+                transaction_list = list(Transactions.objects.all().filter(user= request.user.id))
                 returnList = []
                 for tran in transaction_list:
                     curTran = {}
                     curTran['movie'] = tran.ticket.movie.name
+                    curTran['price'] = tran.ticket.price
+                    curTran['time'] = tran.ticket.time
                     curTran['quantity'] = tran.quantity
+                    curTran['offer'] = tran.offer.offer_perc
                     curTran['total_price'] = tran.total_price
                     curTran['date'] = tran.date
                     returnList.append(curTran)
                     # return as a json object
-                return JsonResponse(returnList, safe = False, content_type = 'application/json')
+                return render(request, '../templates/membership/tickettransactions.html', {'tranList': returnList}, status = 200)
             except DatabaseError:
                 return HttpResponse(DatabaseError, status = 400)
             except KeyError:
@@ -470,145 +494,7 @@ def transactions(request):
                 return HttpResponse(AuthorizationError, status = 403)    
         else:
             return HttpResponse(BadRequestMessage, status = 405)
-                
-@csrf_exempt
-@sensitive_post_parameters()
-def movies(request):
-    """ This view handles all requests made to /movies route. When a GET
-    request is made, all movies will be displayed as a webpage, with all
-    movie information such as name, description, and runtime. When a POST
-    request is made (only admins can make posts, and add movies to database)
-    new movie entries can be added to the website, with information like
-    name, description, and runtime specified. """
-    if request.method == 'GET':
-        try:
-            # get all movies and return all movie data in the template
-            moviesList = list(Movies.objects.all().values()) 
-            return render(
-                request, 
-                '../templates/main/movies.html', 
-                {'movieList': moviesList}, 
-                status = 200
-                )
-        except DatabaseError:
-            return HttpResponse(DatabaseErrorMessage, status=400)
-        except Exception:
-            return HttpResponse(ExceptionMessage, status = 400)
-    
-    elif request.method == 'POST':
-        if request.user.is_authenticated:
-            if len(Users.objects.all().values().filter(
-                id= request.user.id, 
-                membership = "administrator"
-                )) == 0:
-                return HttpResponse("Unauthorized", status=403)
-            posted_data = jsonHandling(request)
-            if posted_data == JSONDecodeFailMessage:
-                return HttpResponse(JSONDecodeFailMessage, status = 400)
-            else:
-                try:
-                    # create a new movie
-                    newMovie = Movies.objects.create(name = posted_data['name'], 
-                    description = posted_data['description'], runtime = posted_data['runtime'])
-                    newMovie.save()
-                    movieInfo = Movies.objects.all().values().filter(pk=newMovie.pk)[0]
-                    # return the newly created movie as a json object
-                    return JsonResponse(
-                        movieInfo, 
-                        safe = False, 
-                        content_type = 'application/json', 
-                        status = 201
-                        )
-                except DatabaseError:
-                    return HttpResponse(DatabaseErrorMessage, status=400)
-                except KeyError:
-                    return HttpResponse(KeyErrorMessage, status = 400)
-                except Exception:
-                    return HttpResponse(ExceptionMessage, status = 400)
-        else:
-            return HttpResponse("AuthorizationError", status=401)
-    else:
-        return HttpResponse("Method not allowed on /movies.", status = 405)
-
-@csrf_exempt
-@sensitive_post_parameters()
-def specificMovie(request, movieId):
-    """ This view handles all requests made to /movies/<id> route.
-    When a GET request is made, information about the specific movie
-    is displayed. When a PATCH request is made (only admins can
-    patch and delete movie entries) information about the specific 
-    movie can be changed, such as description and runtime. When a 
-    DELETE request is made specific movies can be deleted from the
-    website."""
-    if request.method == 'GET':
-        try:
-            # gets specific movies based off of url parameter
-            specMovie = Movies.objects.all().values().filter(pk = movieId)[0]
-            return JsonResponse(specMovie, safe = False,  content_type = 'application/json')
-        
-        except DatabaseError:
-            return HttpResponse(DatabaseErrorMessage, status=400)
-        except Exception:
-            return HttpResponse(ExceptionMessage, status = 400)
-
-    elif request.method == 'PATCH':
-        if request.user.is_authenticated:
-
-            # checks to see if user is admin or not
-            if len(Users.objects.all().values().filter(
-                id= request.user.id, 
-                membership = "administrator"
-                )) == 0:
-                return HttpResponse("Unauthorized", status=403)
-            posted_data = jsonHandling(request)
-            if posted_data == JSONDecodeFailMessage:
-                return HttpResponse(JSONDecodeFailMessage, status = 400)
-            else:
-                try:
-                    # if description is in the JSON body, then update description 
-                    # for the specific movie.
-                    if 'description' in posted_data:
-                        Movies.objects.filter(id= movieId).update(description= posted_data['description'])
-                    movieInfo = Movies.objects.all().values().filter(id= movieId)[0]
-                    
-                    #returns the updated information of specific movie 
-                    return JsonResponse(
-                        movieInfo, 
-                        safe = False, 
-                        content_type = 'application/json', 
-                        status = 201
-                        )
-                except DatabaseError:
-                    return HttpResponse(DatabaseErrorMessage, status=400)
-                except KeyError:
-                    return HttpResponse(KeyErrorMessage, status = 400)
-                except Exception:
-                    return HttpResponse(ExceptionMessage, status = 400)
-        else:
-            return HttpResponse("AuthorizationError", status=401)
-
-    elif request.method == 'DELETE':
-        if request.user.is_authenticated:
-            try:
-                if len(Users.objects.all().values().filter(
-                    id= request.user.id, 
-                    membership = "administrator"
-                    )) == 0:
-                    return HttpResponse("Unauthorized", status=403)
-
-                # deletes specific movie from the data base
-                Movies.objects.filter(id= movieId).delete()
-                return HttpResponse("The movie has been deleted.")
-            except DatabaseError:
-                return HttpResponse(DatabaseErrorMessage, status=400)
-            except Exception:
-                return HttpResponse(ExceptionMessage, status = 400)
-        else:
-            return HttpResponse("AuthorizationError", status=401)
-
-    else :
-        return HttpResponse("Method not allowed on /movies/.", status = 405)
-
+              
 @csrf_exempt
 @sensitive_post_parameters()
 def users(request):
@@ -647,7 +533,6 @@ def users(request):
             return HttpResponse("Method not allowed on /users.", status = 405)
     else:
         return HttpResponse(AuthorizationError, status=401)
-
 
 @csrf_exempt
 @sensitive_post_parameters()
@@ -805,10 +690,111 @@ def specificOffer(request, offerId):
 
 
             
-            
+@csrf_exempt
+@sensitive_post_parameters()
+def theaterMovies(request, theater_id):
+    """ This view handles all requests made to /theaters/<id>/tickets.
+    When a GET request is made, all tickets available in the specific 
+    theater will be displayed. When a POST (only admins can post and delete)
+    request is made, new tickets can be added to the theater when infomation
+    of about movie, price movie type, and time are provided. When a DELETE 
+    request is made specific tickets can be deleted from the theater. Only
+    tickets for the specified theater can be deleted.
+    """
+    current_user = request.user
+    if request.method == "GET":
+        try:
+            # get all tickets
+            all_movies = Tickets.objects.filter(
+                theater = theater_id
+                ).all().values('movie').distinct()
+
+            movieList = []
+            for movie in all_movies:
+                movieList.append(Movies.objects.get(id = movie['movie']))
+
+        except DatabaseError:
+            return HttpResponse(DatabaseError, status = 400)
+        except Exception:
+            return HttpResponse(ExceptionMessage, status = 400)
+        else:
+            # return all tickets data as a json object
+            return render(
+                request,
+                '../templates/main/theaterMovies.html',
+                {'movieList': movieList},
+                status = 200
+            )
+    else:
+        return HttpResponse(BadRequestMessage, status = 405)           
 
                 
+@csrf_exempt
+@sensitive_post_parameters()
+def addCart(request, theater_id, movie_id, ticket_id):
 
+    if request.method == 'GET':
+        try:
+            form = AddCartForm()
+            return render(request, '../templates/main/addCart.html', {'form': form}, status = 200)
+        except DatabaseError:
+            return HttpResponse(DatabaseErrorMessage, status=400)
+        except KeyError:
+            return HttpResponse(KeyErrorMessage, status = 400)
+        except Exception:
+            return HttpResponse(ExceptionMessage, status = 400)
+
+    if(request.method == 'POST'): 
+        try:     
+            current_user = request.user
+            if not current_user.is_authenticated:
+                return HttpResponse(AuthorizationError, status = 401)
+
+            form = AddCartForm(request.POST)
+            if not form.is_valid():
+                return HttpResponse("Bad login form.", status = 400)
+
+            the_quantity = int(form.cleaned_data['quantity'])
+            the_user = Users.objects.get(id = current_user.id)
+            the_ticket = Tickets.objects.get(id = ticket_id)
+
+            if(the_quantity > the_ticket.amount):
+                error = "There Are Not Enough Tickets For This Movie Showing."
+                form = AddCartForm()
+                return render(request, '../templates/main/addCart.html', {'form': form, 'error': error}, status = 200)
+            else:
+                Tickets.objects.filter(id = ticket_id).update(amount = the_ticket.amount - the_quantity)
+            
+            if(current_user.membership == 'member'):
+                the_offer = Offers.objects.get(offer_name = 'Membership')
+            else:
+                the_offer = Offers.objects.get(offer_name = 'No Offer')
+
+
+            the_total_price = float(the_quantity) * float(the_ticket.price) * float(
+                1 - the_offer.offer_perc)
+ 
+            the_total_price = round(the_total_price, 2)
+
+            new_cart = Cart.objects.create(
+                user = the_user, 
+                ticket = the_ticket, 
+                quantity = the_quantity, 
+                offer = the_offer, 
+                total_price = the_total_price
+                )
+
+            new_cart.save()
+            return HttpResponseRedirect("/cart")
+        except DatabaseError:
+            return HttpResponse(DatabaseErrorMessage, status=400)
+        except KeyError:
+            return HttpResponse(KeyErrorMessage, status = 400)
+        except Exception:
+            return HttpResponse(ExceptionMessage, status = 400)                   
+
+    else:
+        return HttpResponse("Method not allowed on /.", status = 405)
 
 
 

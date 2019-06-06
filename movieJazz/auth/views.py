@@ -17,7 +17,7 @@ ExceptionMessage = "Some Exceptions Happened"
 AuthorizationError = "Not Authorized"
 
 # Create your views here.
-
+@csrf_exempt
 def adminUser():
     """ This will create an admin user, which is specifically for internal use.
     The user will only be created if it does not exist already. """
@@ -37,8 +37,6 @@ def adminUser():
         
         except DatabaseError:
             return HttpResponse(DatabaseErrorMessage, status=400)
-
-adminUser()
 
 @csrf_exempt
 @sensitive_post_parameters()
@@ -65,7 +63,10 @@ def register(request):
                 password = form.cleaned_data['password']
                 passwordconf = form.cleaned_data['passwordconf']
                 if not password == passwordconf:
-                    return HttpResponse("Passwords did not match.", status = 400)
+                    form = ReigistrationForm()
+                    error = "Passwords Did Not Match"
+                    return render(request, '../templates/auth/register.html', {'form': form, 'error': error}, status = 200)
+
                 username = form.cleaned_data['username']
                 email = form.cleaned_data['email']
                 first_name = form.cleaned_data['first_name']
@@ -113,7 +114,9 @@ def signin(request):
                     login(request, user)
                     return HttpResponseRedirect('/')
                 else:
-                    return HttpResponse("Invalid credentials.", status = 401)
+                    form = SigninForm()
+                    error = "Invaid Username Or Password."
+                    return render(request, '../templates/auth/signin.html', {'form': form, 'error': error}, status = 200)
             except KeyError:
                 return HttpResponse(KeyError, status = 400)
     else:
@@ -131,7 +134,7 @@ def signout(request):
         # logs out a user if he has signed in
         if request.user.is_authenticated:
             logout(request)
-            return HttpResponse('Sign out successful.', status = 200)
+            return HttpResponseRedirect('/')
         else:
             return HttpResponse('Not logged in.', status = 200)
     else:

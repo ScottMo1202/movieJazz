@@ -38,7 +38,10 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'main.apps.MainConfig',
-    'django_extensions',
+    'contactus.apps.ContactusConfig',
+    'handlemovie.apps.HandlemovieConfig',
+    'membership.apps.MembershipConfig',
+    'buytickets.apps.BuyticketsConfig'
 ]
 
 MIDDLEWARE = [
@@ -115,31 +118,7 @@ USE_L10N = True
 
 USE_TZ = True
 
-# CSRF_COOKIE_SECURE determines whether to use a secure cookie for the CSRF cookie. 
-# If this is set to True, the cookie will be marked as “secure”, 
-# which means browsers may ensure that the cookie is only sent with 
-# an HTTPS connection.
-CSRF_COOKIE_SECURE = True
 
-# SESSION_COOKIE_SECURE determines whether to use a secure cookie for the session 
-# cookie. If this is set to True, the cookie will be marked as “secure”, 
-# which means browsers may ensure that the cookie is only sent under 
-# an HTTPS connection.
-SESSION_COOKIE_SECURE = True
-
-# CSRF_COOKIE_HTTPONLY determines whether to use HttpOnly flag on the CSRF cookie.
-# If this is set to True, client-side JavaScript will not to be able to access 
-# the CSRF cookie
-CSRF_COOKIE_HTTPONLY = True
-
-# SESSION_COOKIE_HTTPONLY determines whether to use HttpOnly flag on the session cookie.
-# If this is set to True, client-side JavaScript will not to be able to access the session
-# cookie.
-SESSION_COOKIE_HTTPONLY = True
-
-# If SECURE_SSL_REDIRECT is True, the SecurityMiddleware redirects all non-HTTPS requests 
-# to HTTPS (except for those URLs matching a regular expression listed in SECURE_REDIRECT_EXEMPT).
-SECURE_SSL_REDIRECT = True
 
 # SESSION_COOKIE_AGE is a integer value which determines the amount of seconds
 # a cookie is in session. Currently the cookie age is set to 3600 seconds, or 1 hour
@@ -150,5 +129,15 @@ SESSION_COOKIE_AGE = 3600
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
 
 STATIC_URL = '/static/'
+
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'css'),
+    os.path.join(BASE_DIR, 'fonts'),
+    os.path.join(BASE_DIR, 'images'),
+    os.path.join(BASE_DIR, 'js'),
+    os.path.join(BASE_DIR, 'upload')
+]
 
 AUTH_USER_MODEL = 'main.Users'
