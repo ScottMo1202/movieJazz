@@ -48,6 +48,7 @@ def register(request):
        fill out
        POST: submit the registration application 
     """
+    adminUser()
     # This checks the HTTP methods.
     if request.method == 'GET':
         form = ReigistrationForm()
@@ -96,6 +97,7 @@ def signin(request):
        'POST': sign in the user if the username and 
        password are all correct
     """
+    adminUser()
     if request.method == 'GET':
         form = SigninForm()
         return render(request, '../templates/auth/signin.html', 
