@@ -25,7 +25,11 @@ SECRET_KEY = '!vny0r!5erx+wlee%kw7z59s^y22sb+6fqpl===l7!d))0@o2+'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    "localhost",
+    "127.0.0.1",
+    "moviejazz.azurewebsites.net"
+]
 
 
 # Application definition
@@ -87,7 +91,7 @@ DATABASES = {
          'HOST': 'trialserver1.database.windows.net',
          'PORT': '1433',
          'OPTIONS': {
-             'driver': 'ODBC Driver 17 for SQL Server',
+             'driver': 'ODBC Driver 13 for SQL Server',
          }
      }
 }

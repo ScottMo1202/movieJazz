@@ -1,0 +1,8 @@
+version: '2.1'
+
+services:
+  moviejazz:
+    image: moviejazz441.azurecr.io/moviejazz:latest
+    build: .
+    ports:
+      - 8000:8000
