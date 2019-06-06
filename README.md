@@ -133,7 +133,7 @@ For every newly registered user, the default membership is normal.<br />
        "name": "Avengers:endgame", <br />
        "description": "This is Avengers", <br />
        "runtime": 120, <br />
-       "url" : "https://www.google.com/url?sa=i&source=images&cd=&ved=2ahUKEwi1qILi99XiAhXLPn0KHfENBDsQjRx6BAgBEAU&url=https%3A%2F%2Fwww.express.co.uk%2Fentertainment%2Ffilms%2F1135772%2FAvengers-Endgame-ending-theory-alternate-timeline-Ego-Thanos-deadly-fan-theory&psig=AOvVaw0IWgaxc2qgiaFjNSg0EVeb&ust=1559947551306426" **(This is the Image URL)** <br />
+       "url" : "https://cdn.images.express.co.uk/img/dynamic/36/590x/AVENGERS-ENDGAME-1135772.webp?r=1559583547239" **(This is the Image URL)** <br />
      }, <br />
      ... **(This Post Method Takes in a List of JSON Objects)** <br />
    ] <br />
