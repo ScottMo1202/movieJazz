@@ -188,6 +188,9 @@ For every newly registered user, the default membership is normal.<br />
 
 * /offers: refers to all offers in the database
    * GET: Respond with a list of all of the offers in the database with a status of 200. It will return Database error message if bugs happen. Anyone can do this even without any authentification.
+   Example: <br />
+   ![alt text](./img/users.png)
+   
    * POST: Create a new offer, save it into the database using the offer model JSON in the request body, respond with a 201 code and a copy of the new offer encoded as a json object. Only the administrator can do it. It may return Database error message if something goes wrong.
    * Sample input:<br />
    {<br />
@@ -279,7 +282,14 @@ For every newly registered user, the default membership is normal.<br />
   ![alt text](./img/cart.png)
 
 * cart/<int: cart_id>
-  * GET:
+  * GET: Deletes the specific cart item from the cart and add the tickets reserved for the purchase to the avialability of the tickets page.
+  Example: <br />
+  ![alt text](./img/addCart.png)
+
+* cart/offers/<int: off_id>
+  * GET: Adds an offer from the offer page, when apply is clicked, to all the items in the cart. 
+  Example: <br />
+  ![alt text](./img/deleteCart.png)
 
 * cart/checkout: refers to the tickets checkout page
   * GET: renders a checkout form when the user plans to pay for all items in his cart. The users neess to fill name_on_card, billing_address, card_number and csv code to finish this purchase. code sent: 200.  The user has to be authenticated to do this operation.
