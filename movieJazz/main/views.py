@@ -64,6 +64,7 @@ def home(request):
     links to different areas of the page such as signin/signout, movies,
     offers, etc. """
     # go to the home page
+    defaultOffer()
     if request.method == 'GET':
         return render(request, '../templates/main/index.html', status = 200)
     else:
