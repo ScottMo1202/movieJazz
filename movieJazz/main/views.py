@@ -311,7 +311,7 @@ def tickets(request, theater_id, movie_id):
                 return HttpResponse(KeyErrorMessage, status = 400)
             except Exception:
                 return HttpResponse(ExceptionMessage, status = 400)
-            else:
+            else: 
                 # return the new ticket data as a json object if created successfully
                 return JsonResponse(
                     ticketInfo, 
@@ -570,7 +570,7 @@ def offers(request):
             if posted_data == JSONDecodeFailMessage:
                 return HttpResponse(JSONDecodeFailMessage, status = 400)
             else:
-                try:
+                
                     # Adding and saving new offer into Offers table
                     newOffer = Offers.objects.create(
                         offer_name = posted_data['offer_name'], 
@@ -586,12 +586,7 @@ def offers(request):
                         content_type = 'application/json', 
                         status = 201
                         )
-                except DatabaseError:
-                    return HttpResponse(DatabaseErrorMessage, status=400)
-                except KeyError:
-                    return HttpResponse(KeyErrorMessage, status = 400)
-                except Exception:
-                    return HttpResponse(ExceptionMessage, status = 400)
+                
         else:
             return HttpResponse("AuthorizationError", status=401)
     else:
