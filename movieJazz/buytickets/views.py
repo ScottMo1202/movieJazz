@@ -39,15 +39,21 @@ def jsonHandling(request):
 @csrf_exempt
 @sensitive_post_parameters()
 def cart(request):
+    """ This functions deals with only the GET method. 
+        The user has to login to call it. It will get
+        all items(movie tickets) in the shopping cart and renders as a 
+        list to the html template.
+    """
     current_user = request.user
     if not current_user.is_authenticated:
         return HttpResponse(AuthorizationError, status = 401)
     else:
         if request.method == 'GET':
             try:
-                # get all transactions and return as a list
+                # get all cart items of the user, including the ticket name,
+                # time, quantity, offer, and total_price after applying the 
+                # offer.
                 cart_list = list(Cart.objects.all().filter(user= request.user.id))
-                print(cart_list)
                 returnList = []
                 for cart in cart_list:
                     curCart = {}
@@ -77,6 +83,11 @@ def cart(request):
 @csrf_exempt
 @sensitive_post_parameters()
 def addOffer(request, off_id):
+    """This method onoly deals with one HTTP method: GET.
+       When GET, the system if the user has a status of member.
+       If so, it could apply to all the items to the buy and calculate
+       a discounted price. 
+    """
     current_user = request.user
     if not current_user.is_authenticated:
         return HttpResponse(AuthorizationError, status = 401)
@@ -84,6 +95,8 @@ def addOffer(request, off_id):
         if request.method == 'GET':   
             try:
                 offerObj = Offers.objects.get(id = off_id)
+                # check whether the user is a member, if so, apply 
+                # appropriate offers to him.
                 if current_user.membership != 'member':
                     cart_list = list(Cart.objects.all().filter(user= request.user.id))
 
@@ -110,18 +123,28 @@ def addOffer(request, off_id):
 @csrf_exempt
 @sensitive_post_parameters()
 def alterCart(request, cart_id):
+    """This method with deals with one HTTP methos: GET
+       When GET, the system will delete things from the cart
+       but will it will add back the number, refering to how 
+       many items they user wanted to buy, to the stock. For example,
+       if there are 57 tickets left, and the user added three into the cart.
+       If the user decides not to buy it and delte the cart, the 
+       three tickets will be added back to the stock, which means that
+       now the stock has 60 tickets left.
+    """
     current_user = request.user
     if not current_user.is_authenticated:
         return HttpResponse(AuthorizationError, status = 401)
     else:     
         if request.method == 'GET':
+            # 
             try:
+                # add the deleted amount back to the model.
                 del_id = cart_id
                 cart_item = Cart.objects.get(id = del_id)
                 ticket_id = cart_item.ticket.id
                 ticket_amount = cart_item.ticket.amount
                 quant = cart_item.quantity
-                
                 Cart.objects.filter(id= del_id).delete()
                 Tickets.objects.filter(id= ticket_id).update(amount= ticket_amount + quant)
                 
@@ -138,13 +161,25 @@ def alterCart(request, cart_id):
 @csrf_exempt              
 @sensitive_post_parameters()
 def checkout(request):
+    """This function deals with two Http method, one is GET, which renders
+       a checkout form where the user needs to fill his data including 
+       card information. The POST method will check whether fill all
+       valid data and create a new tickets transaction model and save it into
+       the database.
+    """
     current_user = request.user
     if not current_user.is_authenticated:
         return HttpResponse(AuthorizationError, status = 401)
     else:
+        # renders the purchase form
         if request.method == 'GET':
             form = CartForm()
-            return render(request, '../templates/buytickets/purchaseform.html', {'form': form}, status = 200)
+            return render(
+                request, 
+                '../templates/buytickets/purchaseform.html', 
+                {'form': form}, 
+                status = 200
+                )
         elif request.method == 'POST':
             form = CartForm(request.POST)
             if not form.is_valid():
@@ -152,7 +187,7 @@ def checkout(request):
             else:
                 cartList = list(Cart.objects.all().filter(user= request.user.id))
                 for cart in cartList:
-                    
+                    # create a new transaction history and save it into the database
                     the_user = Users.objects.filter(id = cart.user.id).get()
                     the_ticket = Tickets.objects.filter(id = cart.ticket.id).get()
                     the_quantity = cart.quantity

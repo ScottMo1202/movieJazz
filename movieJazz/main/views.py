@@ -57,8 +57,6 @@ def defaultOffer():
         except Exception:
             return HttpResponse(ExceptionMessage, status = 400)
 
-defaultOffer()
-
 @csrf_exempt
 @sensitive_post_parameters()
 def home(request):
@@ -66,10 +64,11 @@ def home(request):
     links to different areas of the page such as signin/signout, movies,
     offers, etc. """
     # go to the home page
+    defaultOffer()
     if request.method == 'GET':
         return render(request, '../templates/main/index.html', status = 200)
     else:
-        return HttpResponse("Method not allowed on /.", status = 405)
+        return HttpResponse(BadRequestMessage, status = 405)
 
 @sensitive_post_parameters()
 def jsonHandling(request):
@@ -313,7 +312,7 @@ def tickets(request, theater_id, movie_id):
                 return HttpResponse(KeyErrorMessage, status = 400)
             except Exception:
                 return HttpResponse(ExceptionMessage, status = 400)
-            else:
+            else: 
                 # return the new ticket data as a json object if created successfully
                 return JsonResponse(
                     ticketInfo, 
@@ -381,7 +380,12 @@ def transactions(request):
                     curTran['date'] = tran.date
                     returnList.append(curTran)
                     # return as a json object
-                return render(request, '../templates/membership/tickettransactions.html', {'tranList': returnList}, status = 200)
+                return render(
+                    request, 
+                    '../templates/membership/tickettransactions.html', 
+                    {'tranList': returnList}, 
+                    status = 200
+                    )
             except DatabaseError:
                 return HttpResponse(DatabaseError, status = 400)
             except KeyError:
@@ -508,7 +512,7 @@ def users(request):
                 id= request.user.id, 
                 membership = "administrator"
                 )) == 0:
-                return HttpResponse("Unauthorized", status=403)
+                return HttpResponse("Not Authorized", status=403)
         except DatabaseError:
             return HttpResponse(DatabaseErrorMessage, status=400)
         except Exception:
@@ -530,7 +534,7 @@ def users(request):
             except Exception:
                 return HttpResponse(ExceptionMessage, status = 400)
         else :
-            return HttpResponse("Method not allowed on /users.", status = 405)
+            return HttpResponse(BadRequestMessage, status = 405)
     else:
         return HttpResponse(AuthorizationError, status=401)
 
@@ -572,7 +576,7 @@ def offers(request):
             if posted_data == JSONDecodeFailMessage:
                 return HttpResponse(JSONDecodeFailMessage, status = 400)
             else:
-                try:
+                
                     # Adding and saving new offer into Offers table
                     newOffer = Offers.objects.create(
                         offer_name = posted_data['offer_name'], 
@@ -588,14 +592,9 @@ def offers(request):
                         content_type = 'application/json', 
                         status = 201
                         )
-                except DatabaseError:
-                    return HttpResponse(DatabaseErrorMessage, status=400)
-                except KeyError:
-                    return HttpResponse(KeyErrorMessage, status = 400)
-                except Exception:
-                    return HttpResponse(ExceptionMessage, status = 400)
+                
         else:
-            return HttpResponse("AuthorizationError", status=401)
+            return HttpResponse(AuthorizationError, status=401)
     else:
         return HttpResponse("Method not allowed on /offers.", status = 405)
 
@@ -627,7 +626,7 @@ def specificOffer(request, offerId):
                     id= request.user.id, 
                     membership = "administrator"
                     )) == 0:
-                    return HttpResponse("Unauthorized", status=403)
+                    return HttpResponse(AuthorizationError, status=403)
             except DatabaseError:
                 return HttpResponse(DatabaseErrorMessage, status = 400)
             except KeyError:
@@ -663,7 +662,7 @@ def specificOffer(request, offerId):
                 except Exception:
                     return HttpResponse(ExceptionMessage, status = 400)
         else:
-            return HttpResponse("AuthorizationError", status=401)
+            return HttpResponse(AuthorizationError, status=401)
 
     elif request.method == 'DELETE':
         if request.user.is_authenticated:
@@ -672,7 +671,7 @@ def specificOffer(request, offerId):
                     id= request.user.id, 
                     membership = "administrator"
                     )) == 0:
-                    return HttpResponse("Unauthorized", status=403)
+                    return HttpResponse(AuthorizationError, status=403)
 
                 # Deletes the specified offer
                 Offers.objects.filter(id= offerId).delete()
@@ -686,7 +685,7 @@ def specificOffer(request, offerId):
             return HttpResponse(AuthorizationError, status=401)
 
     else :
-        return HttpResponse("Method not allowed on /offers/.", status = 405)
+        return HttpResponse(BadRequestMessage, status = 405)
 
 
             
@@ -732,9 +731,17 @@ def theaterMovies(request, theater_id):
 @csrf_exempt
 @sensitive_post_parameters()
 def addCart(request, theater_id, movie_id, ticket_id):
-
+    """This method deals with two HTTPS methods: GET, POST.
+       WHen GET, the system will render a cart form where the 
+       user can decide what and how any items to add to their 
+       cart. When POST, The system will check what the user put 
+       into the form, calculate late the total price based on 
+       the quantity and his membership status. Then creates a 
+       new Cart object and saves it into the database.                                           
+    """
     if request.method == 'GET':
         try:
+            # renders the cart form
             form = AddCartForm()
             return render(request, '../templates/main/addCart.html', {'form': form}, status = 200)
         except DatabaseError:
@@ -745,7 +752,7 @@ def addCart(request, theater_id, movie_id, ticket_id):
             return HttpResponse(ExceptionMessage, status = 400)
 
     if(request.method == 'POST'): 
-        try:     
+        try:  
             current_user = request.user
             if not current_user.is_authenticated:
                 return HttpResponse(AuthorizationError, status = 401)
@@ -757,11 +764,16 @@ def addCart(request, theater_id, movie_id, ticket_id):
             the_quantity = int(form.cleaned_data['quantity'])
             the_user = Users.objects.get(id = current_user.id)
             the_ticket = Tickets.objects.get(id = ticket_id)
-
+            # check if there are enough tickets in the stock.
             if(the_quantity > the_ticket.amount):
                 error = "There Are Not Enough Tickets For This Movie Showing."
                 form = AddCartForm()
-                return render(request, '../templates/main/addCart.html', {'form': form, 'error': error}, status = 200)
+                return render(
+                    request, 
+                    '../templates/main/addCart.html', 
+                    {'form': form, 'error': error}, 
+                    status = 200
+                    )
             else:
                 Tickets.objects.filter(id = ticket_id).update(amount = the_ticket.amount - the_quantity)
             
@@ -769,8 +781,8 @@ def addCart(request, theater_id, movie_id, ticket_id):
                 the_offer = Offers.objects.get(offer_name = 'Membership')
             else:
                 the_offer = Offers.objects.get(offer_name = 'No Offer')
-
-
+            
+            # calculate the total price
             the_total_price = float(the_quantity) * float(the_ticket.price) * float(
                 1 - the_offer.offer_perc)
  
@@ -783,7 +795,7 @@ def addCart(request, theater_id, movie_id, ticket_id):
                 offer = the_offer, 
                 total_price = the_total_price
                 )
-
+            # save the cart model into the database.
             new_cart.save()
             return HttpResponseRedirect("/cart")
         except DatabaseError:
@@ -794,7 +806,7 @@ def addCart(request, theater_id, movie_id, ticket_id):
             return HttpResponse(ExceptionMessage, status = 400)                   
 
     else:
-        return HttpResponse("Method not allowed on /.", status = 405)
+        return HttpResponse(BadRequestMessage, status = 405)
 
 
 

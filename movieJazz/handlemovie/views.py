@@ -58,7 +58,7 @@ def rawMovies(request):
         except Exception:
             return HttpResponse(ExceptionMessage, status = 400)
     else:
-        return HttpResponse("Method not allowed on /movies/raw.", status = 405)
+        return HttpResponse(BadRequestMessage, status = 405)
     
 
 @csrf_exempt
@@ -87,11 +87,12 @@ def movies(request):
     
     elif request.method == 'POST':
         if request.user.is_authenticated:
+            # check whether the user is administrator.
             if len(Users.objects.all().values().filter(
                 id= request.user.id, 
                 membership = "administrator"
                 )) == 0:
-                return HttpResponse("Unauthorized", status=403)
+                return HttpResponse(AuthorizationError, status=403)
             posted_data = jsonHandling(request)
             if posted_data == JSONDecodeFailMessage:
                 return HttpResponse(JSONDecodeFailMessage, status = 400)
@@ -121,9 +122,9 @@ def movies(request):
                 except Exception:
                     return HttpResponse(ExceptionMessage, status = 400)
         else:
-            return HttpResponse("AuthorizationError", status=401)
+            return HttpResponse(AuthorizationError, status=401)
     else:
-        return HttpResponse("Method not allowed on /movies.", status = 405)
+        return HttpResponse(BadRequestMessage, status = 405)
 
 
 @csrf_exempt
@@ -140,7 +141,12 @@ def specificMovie(request, movieId):
             # gets specific movies based off of url parameter
             specMovie = Movies.objects.all().values().filter(pk = movieId)[0]
             all_reviews = list(Reviews.objects.filter(movie__id = specMovie['id']).all().values())
-            return render(request, '../templates/movies/specMovie.html', {'movie': specMovie, 'reviewList': all_reviews}, status = 200)
+            return render(
+                request, 
+                '../templates/movies/specMovie.html', 
+                {'movie': specMovie, 'reviewList': all_reviews}, 
+                status = 200
+                )
     elif request.method == 'PATCH':
         if request.user.is_authenticated:
 
@@ -158,7 +164,7 @@ def specificMovie(request, movieId):
                     # if description is in the JSON body, then update description 
                     # for the specific movie.
                     if 'description' in posted_data:
-                        Movies.objects.filter(id= movieId).update(description= posted_data['description'])
+                        Movies.objects.filter(id= movieId).update(description = posted_data['description'])
                     movieInfo = Movies.objects.all().values().filter(id= movieId)[0]
 
                     if 'url' in posted_data:
@@ -179,7 +185,7 @@ def specificMovie(request, movieId):
                 except Exception:
                     return HttpResponse(ExceptionMessage, status = 400)
         else:
-            return HttpResponse("AuthorizationError", status=401)
+            return HttpResponse(AuthorizationError, status=401)
 
     elif request.method == 'DELETE':
         if request.user.is_authenticated:
@@ -198,37 +204,57 @@ def specificMovie(request, movieId):
             except Exception:
                 return HttpResponse(ExceptionMessage, status = 400)
         else:
-            return HttpResponse("AuthorizationError", status=401)
+            return HttpResponse(AuthorizationError, status=401)
 
     else :
-        return HttpResponse("Method not allowed", status = 405)
+        return HttpResponse(BadRequestMessage, status = 405)
 
 @csrf_exempt
 def search(request):
-  if request.method == 'GET':
-      form = SearchForm()
-      return render(request, '../templates/movies/search.html', {'form': form}, status = 200)
-  elif request.method == 'POST':
-      form = SearchForm(request.POST)
-      if not form.is_valid():
-          return HttpResponse("Invalid registration request.", status = 400)
-      else:
-          try:
-            query = str(form.cleaned_data['input'])
-            the_result = list(Movies.objects.filter(name__icontains = query).all().values())
-            if (len(the_result) == 0):
-                return render(request, '../templates/movies/searchResult.html', {'movieList': the_result, 'query': query}, status = 200)
-            else:
-                return render(request, '../templates/movies/searchResult.html', {'movieList': the_result, 'query': query}, status = 200)
-          except DatabaseError:
-                return HttpResponse(DatabaseErrorMessage, status=400)
-          except Exception:
-                return HttpResponse(ExceptionMessage, status = 400)
-  else:
-      return HttpResponse("Method not allowed", status = 405)
+    """ This method deals with two method: GET and POST. When GET,
+        the system will render a search bar that allows the user 
+        to search movies they want. When POST, the server will
+        list out all movies that match the user's quesry to the 
+        user.
+    """
+    if request.method == 'GET':
+        form = SearchForm()
+        return render(request, '../templates/movies/search.html', {'form': form}, status = 200)
+    elif request.method == 'POST':
+        form = SearchForm(request.POST)
+        if not form.is_valid():
+            return HttpResponse("Invalid registration request.", status = 400)
+        else:
+            try:
+                # seach all movies based on the user's query
+                query = str(form.cleaned_data['input'])
+                the_result = list(Movies.objects.filter(name__icontains = query).all().values())
+                if (len(the_result) == 0):
+                    return render(
+                        request, '../templates/movies/searchResult.html', 
+                        {'movieList': the_result, 'query': query}, 
+                        status = 200
+                        )
+                else:
+                    return render(request, 
+                    '../templates/movies/searchResult.html', 
+                    {'movieList': the_result, 'query': query}, 
+                    status = 200
+                    )
+            except DatabaseError:
+                    return HttpResponse(DatabaseErrorMessage, status=400)
+            except Exception:
+                    return HttpResponse(ExceptionMessage, status = 400)
+    else:
+        return HttpResponse(BadRequestMessage, status = 405)
 
 @csrf_exempt
 def review(request, movie_id):
+    """ This method deals with two methods: GET and POST. When GET, 
+        the system will render a form that allows the user to rate 
+        a mspecific. When POST, the server will create a new Review
+        model based on the data the user fills and save it into database.
+    """
     if request.method == 'GET':
         form = ReviewForm()
         return render(request, '../templates/movies/review.html', {'form': form}, status = 200)
@@ -241,6 +267,7 @@ def review(request, movie_id):
                 return HttpResponse("Invalid registration request.", status = 400)
             else:
                 try:
+                    # create a new Reviews object and save it into database
                     rating = form.cleaned_data['rating']
                     text = form.cleaned_data['text']
                     the_movie = Movies.objects.filter(id = movie_id).get()
