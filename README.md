@@ -128,18 +128,26 @@ For every newly registered user, the default membership is normal.<br />
    ![alt text](./img/movies.png)
    * POST: Create a new movie, save it into the database using the movie model JSON in the request body, respond with a 201 code and a copy of the new movie encoded as a json object. Only the administrator can do it. It may return Database error message if something goes wrong.
    * Sample input:<br />
-   {<br />
-     "name": "Avengers:endgame", <br />
-     "description": "This is Avengers", <br />
-     "runtime": 120, <br />
-   }
+   [ <br />
+     {<br />
+       "name": "Avengers:endgame", <br />
+       "description": "This is Avengers", <br />
+       "runtime": 120, <br />
+       "url" : "https://www.google.com/url?sa=i&source=images&cd=&ved=2ahUKEwi1qILi99XiAhXLPn0KHfENBDsQjRx6BAgBEAU&url=https%3A%2F%2Fwww.express.co.uk%2Fentertainment%2Ffilms%2F1135772%2FAvengers-Endgame-ending-theory-alternate-timeline-Ego-Thanos-deadly-fan-theory&psig=AOvVaw0IWgaxc2qgiaFjNSg0EVeb&ust=1559947551306426" **(This is the Image URL)**
+     }, <br />
+     ... **(This Post Method Takes in a List of JSON Objects)** <br />
+   ] <br />
    * Sample output:<br />
-   {<br />
-     "id": 3
-     "name": "Avengers:endgame", <br />
-     "description": "This is Avengers", <br />
-     "runtime": 120, <br />
-   }
+   [ <br />
+     {<br />
+       "id": 3
+       "name": "Avengers:endgame", <br />
+       "description": "This is Avengers", <br />
+       "runtime": 120, <br />
+     } <br />
+     ... <br />
+   ] <br />
+   
 * /movies/{movie_id}: refers to a specific movie
    * GET:  Display information for a specified movie, including its name, runtime, and a review button if the user wants to rate it. Anyone can do this even without any authentification. code sent: 200<br />
    Example: <br />
@@ -162,7 +170,7 @@ For every newly registered user, the default membership is normal.<br />
    * Sample output:<br />:
    "Movie deleted"<br />
 
-* movies/raw: refer all movies data in a json Response
+* movies/raw: refer all movies data in a json Response **(This is our publicly facing endpoint)**
   * GET: Retrieve all movie data form the database and return it as a json object. Code sent: 200, anyone can do this without authentification.
   Example: <br />
   ![alt text](./img/rawMovies.png)
