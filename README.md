@@ -221,7 +221,7 @@ For every newly registered user, the default membership is normal.<br />
    * Sample output:<br />:
    "Offer deleted"<br />
 
-* contact/
+* contact/: refers to a contact form
   * GET: renders a form, where the user can fill their first name, last name, email, the question and choose which type of question they want to ask. Anyone can do this even without any authentification. code sent: 200. <br />
   Example: <br />
   ![alt text](./img/contact.png)
@@ -229,28 +229,28 @@ For every newly registered user, the default membership is normal.<br />
   Example: <br />
   ![alt text](./img/questionPost.png)
 
-* contact/questions/
+* contact/questions/: list out all asked questions
   * GET: List all questions users posted and their answers. Some have been provided answers, and some have not. code sent: 200. Anyone can do this even without any authentification, but only the administrator can see the 'procide answer' button<br />
   Example: <br />
   ![alt text](./img/questions.png)
 
-* contact/answer/{question_id}/
+* contact/answer/{question_id}/: a form that can provide the answer to a specified question
   * GET: renders a form, where the administrator can answer the question specified in the url. code sent: 200. Only the administrator can do this. code sent: 200<br />
   * Post: The new answer will be stored in the database. If succeeds, the system will reply with HttpResponse: 'Thank you for answering'. code sent: 201. Only the administrator can do this. <br />
 
-* auth/signin/
+* auth/signin/l: signin form
   * GET: renders a signin form, where the user needs to fill his username and password. code sent; 200. Anyone can do this without any authentification. <br />
   Example: <br />
   ![alt text](./img/signin.png)
   * POST: If the filled username exists in the database and the password matches. the server will allow the user to login and redirect to the homepage.
 
-* auth/register
+* auth/register: register form
  * GET: renders a registration form, where the user needs to fill his username, password, password comfirmation, fist name, last name, and email to sign up a new account. code sent: 200. Anyone can do this without any authentification. <br />
  Example: <br />
  ![alt text](./img/register.png)
  * POST: Post the new user data to the database if the user fills all data appropriately and redirect to the signin form. code sent: 201. Anyone can do this without any authentification. <br />
 
- * user/
+ * user/: list all profile data of the current loggin user
    * GET: list all data profile that the user current has. code sent: 200. The user has to login to do this operation.<br />
    Example: <br />
    ![alt text](./img/userProfile.png)
@@ -281,6 +281,8 @@ For every newly registered user, the default membership is normal.<br />
 * cart/<int: cart_id>
   * GET:
 
-* cart/checkout
+* cart/checkout: refers to the tickets checkout page
   * GET: renders a checkout form when the user plans to pay for all items in his cart. The users neess to fill name_on_card, billing_address, card_number and csv code to finish this purchase. code sent: 200.  The user has to be authenticated to do this operation.
-  * POST:
+  Example: <br />
+  ![alt text](./img/ticketcheckout.png)
+  * POST: creates a new ticket transaction mode and save it into the database if the user fills all information appropriately. code sent: 200. The user has to be authenticated to do this. It will then redirect to the /transactions nedpoint.
