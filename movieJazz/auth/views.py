@@ -63,7 +63,10 @@ def register(request):
                 password = form.cleaned_data['password']
                 passwordconf = form.cleaned_data['passwordconf']
                 if not password == passwordconf:
-                    return HttpResponse("Passwords did not match.", status = 400)
+                    form = ReigistrationForm()
+                    error = "Passwords Did Not Match"
+                    return render(request, '../templates/auth/register.html', {'form': form, 'error': error}, status = 200)
+
                 username = form.cleaned_data['username']
                 email = form.cleaned_data['email']
                 first_name = form.cleaned_data['first_name']

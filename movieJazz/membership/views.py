@@ -75,7 +75,7 @@ def purchase(request, theType):
                         total_price = total_price
                     ) 
                 new_transaction.save()
-                return HttpResponse('Thanks for purchasing', status = 201)
+                return HttpResponseRedirect('/user/transactions')
         else:
             return HttpResponse(BadRequestMessage, status = 405)
 
@@ -87,14 +87,11 @@ def transactions(request):
     else:
         if request.method == 'GET':
             all_transactions = list(Membertransaction.objects.filter(user = current_user).all().values())
-            if len(all_transactions) == 0:
-                return HttpResponse('No Transactions Yet', status = 200)
-            else:
-                return render(
-                    request, 
-                    '../templates/membership/transactions.html', 
-                    {'allTransactions': all_transactions, 'user_id': request.user.id},
-                    status = 200
-                )
+            return render(
+                request, 
+                '../templates/membership/transactions.html', 
+                {'allTransactions': all_transactions, 'user_id': request.user.id},
+                status = 200
+            )
         else:
             return HttpResponse(BadRequestMessage, status = 405)
