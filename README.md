@@ -284,12 +284,12 @@ For every newly registered user, the default membership is normal.<br />
 * cart/<int: cart_id>
   * GET: Deletes the specific cart item from the cart and add the tickets reserved for the purchase to the avialability of the tickets page.
   Example: <br />
-  ![alt text](./img/addOffer.PNG)
+  ![alt text](./img/deleteCart.PNG)
 
 * cart/offers/<int: off_id>
   * GET: Adds an offer from the offer page, when apply is clicked, to all the items in the cart. 
   Example: <br />
-  ![alt text](./img/deleteCart.PNG)
+  ![alt text](./img/addOffer.PNG)
 
 * cart/checkout: refers to the tickets checkout page
   * GET: renders a checkout form when the user plans to pay for all items in his cart. The users neess to fill name_on_card, billing_address, card_number and csv code to finish this purchase. code sent: 200.  The user has to be authenticated to do this operation.
