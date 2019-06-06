@@ -57,8 +57,6 @@ def defaultOffer():
         except Exception:
             return HttpResponse(ExceptionMessage, status = 400)
 
-defaultOffer()
-
 @csrf_exempt
 @sensitive_post_parameters()
 def home(request):

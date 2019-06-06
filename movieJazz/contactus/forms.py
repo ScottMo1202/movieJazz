@@ -39,7 +39,7 @@ class QuestionForm(forms.Form):
                     'placeholder': 'Subject'
                     
                     }))
-    body = forms.CharField(label= '', max_length = 1000, required = True, 
+    body = forms.CharField(label= '', max_length = 3000, required = True, 
                 widget=forms.Textarea(attrs={
                     'class' : 'form-control',
                     'placeholder': 'Type Your Question Here.'
@@ -47,7 +47,7 @@ class QuestionForm(forms.Form):
                     }))
 
 class AnswerForm(forms.Form):
-    body = forms.CharField(max_length = 5000, required = True, 
+    body = forms.CharField( required = True, 
                 widget=forms.Textarea(attrs={
                     'class' : 'form-control',
                     'placeholder': 'Type Your Answer Here.',

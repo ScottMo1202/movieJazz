@@ -22,4 +22,4 @@ class Question(models.Model):
     email = models.EmailField(null = False)
     subject = models.CharField(max_length = 100, choices = SUBJECT_CHOICE, null = False)
     body = models.CharField(max_length = 1000, null = False)
-    answer = models.CharField(max_length = 5000, null = True)
+    answer = models.CharField(max_length = 3000, null = True)

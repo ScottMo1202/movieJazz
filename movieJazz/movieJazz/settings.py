@@ -80,9 +80,16 @@ WSGI_APPLICATION = 'movieJazz.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-    }
+         'ENGINE': 'sql_server.pyodbc',
+         'NAME': 'final-database',
+         'USER': 'ScottMo1202@trialserver1',
+         'PASSWORD': 'Roulaohu981202@',
+         'HOST': 'trialserver1.database.windows.net',
+         'PORT': '1433',
+         'OPTIONS': {
+             'driver': 'ODBC Driver 17 for SQL Server',
+         }
+     }
 }
 
 
