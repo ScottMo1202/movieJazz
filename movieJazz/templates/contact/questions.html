@@ -142,23 +142,26 @@
             <div class="row lightcasestudies">          
                     {% for each in questionList%}
                     <div class="row callout bgcolor">
+                        {% if each.answer != None%}
                         <div class="col-md-9">
                             <h4>{{each.id}}. {{each.body}}</h4>
                             <small><b>Type: {{each.subject}}</b></small><br>
-                        {% if each.answer != None%}
                             <small>Answer: {{each.answer}}</small><br>
                         </div>
                         {% else %}
+                        <div class="col-md-9">
+                            <h4>{{each.id}}. {{each.body}}</h4>
+                            <small><b>Type: {{each.subject}}</b></small><br>
                         </div>
                             {% if user %}
                             {% if user.membership == 'administrator' %}
                         <div class="col-md-3">
   
                             <a href = "answer/{{each.id}}"><button class="btn btn-default-blue">Provide Answer</button></a>
+                        </div>
                             {% endif %}
                             {% endif %}
                         
-                        </div>
                         {% endif %}
                     </div><br>
                     {% endfor %}
