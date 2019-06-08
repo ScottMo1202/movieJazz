@@ -283,6 +283,6 @@ def review(request, movie_id):
                 except Exception:
                     return HttpResponse(ExceptionMessage, status = 400)
                 else:
-                    return HttpResponse('Thanks for rating!', status = 201)
+                    return HttpResponseRedirect('/movies/' + str(movie_id))
     else:
         return HttpResponse("Method not allowed", status = 405)

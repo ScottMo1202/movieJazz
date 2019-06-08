@@ -60,7 +60,7 @@ def contact(request):
                 body = body
             )
             new_question.save()
-            return HttpResponse("Thank you for posting questions", status = 200)
+            return HttpResponseRedirect('/contact/questions')
     else:
         return HttpResponse(BadRequestMessage, status = 405)
 

@@ -253,26 +253,3 @@
 	<script src="{% static 'custom.js' %}"></script>
 </body>
 </html>
-
-
-    <h1>Ticket Reciepts</h1>
-    {% block content %}
-    {% if tranList %}
-    {% for tranItem in tranList %}
-        <ul>
-            <li>Ticket: {{tranItem.ticket}}</li>
-            <li>Price: {{tranItem.price}}</li>
-            <li>Show Time: {{tranItem.time}}</li>
-            <li>Quantity: {{tranItem.quantity}}</li>
-            <li>Offer Discount: {{tranItem.offer}}</li>
-            <li>Total Price: {{tranItem.total_price}}</li>
-            <li>Date of Purchase: {{tranItem.date}}</li>
-        </ul>
-    {% endfor %}
-    {% else %}
-        <p>No Tickets Reciepts
-        </p>
-    {% endif %}
-    {% endblock %}
-</body>
-</html>
