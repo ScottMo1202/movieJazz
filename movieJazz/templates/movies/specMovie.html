@@ -130,9 +130,11 @@
             <h1>{{movie.name}}</h1>
             <p>{{movie.description}}</p>
             <small>Runtime: {{movie.runtime}}</small><br><br>
+            {% if user.is_authenticated %}
             <div class="button-wrap text-center">
                 <a href = '{{ movie.id }}/review' class="btn btn-transparent">Review Movie</a>
             </div>
+            {% endif %}
         </div>
     </section>
 

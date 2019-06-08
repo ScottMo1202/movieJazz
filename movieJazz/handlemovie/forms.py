@@ -31,5 +31,5 @@ class ReviewForm(forms.Form):
     text = forms.CharField(label= '', max_length = 5000, required = True, 
                 widget=forms.Textarea(attrs={
                     'class' : 'form-control',
-                    'placeholder': 'Type Your Question Here.'
+                    'placeholder': 'Type Your Review Here.'
                     }))
